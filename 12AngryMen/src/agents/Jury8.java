@@ -10,11 +10,11 @@ public class Jury8 extends Agent {
 
 	@Override
 	protected void setup() {
-		System.out.println(getLocalName() + ":: " + "Arrivée du Jury n°8.");
+		super.setup();
 	}
 	
 	@Override
 	protected void takeDown() {
-		System.out.println(getLocalName() + ":: " + "Départ du Jury n°8.");
+		super.takeDown();
 	}
 }
