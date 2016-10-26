@@ -10,6 +10,8 @@ public class Jury3 extends Jury {
 	@Override
 	protected void setup() {
 		super.setup();
+		
+		belief = 0.0;
 	}
 	
 	@Override

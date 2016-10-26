@@ -5,10 +5,32 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import metiers.Guilt;
 
+/**
+ * 
+ * 
+ */
 public abstract class Jury extends Agent {
 	private static final long serialVersionUID = 2075278590407410662L;
 
+	protected double belief;
+	
+	//	GETTERS
+	public double getBelief() { return belief; }
+	
+	//	SETTERS
+	public void setBelief(double belief) { this.belief = belief; }
+	
+	//	METHODES OBJECT
+	public Guilt belief() {
+		if(belief < 0.5)
+			return Guilt.GUILTY;
+		else
+			return Guilt.INNOCENT;
+	}
+	
+	//	METHODES AGENT
 	@Override
 	protected void setup() {
 		System.out.println(getLocalName() + ":: " + "Arrivée.");
