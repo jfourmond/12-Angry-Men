@@ -1,7 +1,15 @@
 package agents;
 
-import jade.core.Agent;
+public class Jury2 extends Jury {
+	private static final long serialVersionUID = -8216810411937057523L;
 
-public class Jury2 extends Agent {
-
+	@Override
+	protected void setup() {
+		super.setup();
+	}
+	
+	@Override
+	protected void takeDown() {
+		super.takeDown();
+	}
 }
