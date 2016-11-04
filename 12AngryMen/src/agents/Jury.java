@@ -2,17 +2,17 @@ package agents;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.util.leap.Serializable;
 import metiers.Guilt;
 
 /**
  * Classe abstraite {@link Jury} qui représente un Jury.
  */
-public abstract class Jury extends Agent {
+public abstract class Jury extends Agent implements Serializable {
 	private static final long serialVersionUID = 2075278590407410662L;
 
 	protected double belief;
@@ -41,6 +41,7 @@ public abstract class Jury extends Agent {
 		DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
+			System.out.println(getClass().getSimpleName());
 			sd.setType("jury");
 			sd.setName("JADE-12-angry-men");
 			dfd.addServices(sd);
