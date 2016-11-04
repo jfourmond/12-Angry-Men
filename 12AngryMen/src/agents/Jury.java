@@ -2,10 +2,14 @@ package agents;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 import jade.util.leap.Serializable;
 import metiers.Guilt;
 
@@ -51,6 +55,8 @@ public abstract class Jury extends Agent implements Serializable {
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
+		
+		addBehaviour(new PerformReady());
 	}
 	
 	@Override
@@ -65,5 +71,42 @@ public abstract class Jury extends Agent implements Serializable {
 		System.out.println(getLocalName() + ":: Départ.");
 	}
 	
+	//	CLASSES INTERNES COMPORTEMENTS
+	private class PerformReady extends Behaviour {
+		private static final long serialVersionUID = -4978924344665073082L;
+		
+		private MessageTemplate mt; // The template to receive replies
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("juries-ready");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.REQUEST) {
+					try {
+						juries = (AID[]) reply.getContentObject();
+						if(juries == null)
+							block();
+					} catch (UnreadableException e) {
+						e.printStackTrace();
+					}
+				}
+			} else
+				block();
+		}
+
+		@Override
+		public boolean done() {
+			return (juries.length == 12);
+		}
+		
+		@Override
+		public int onEnd() {
+			ready = true;
+			System.out.println(getLocalName() + ":: Prêt.");
+			return super.onEnd();
+		}
+		
+	}
 
 }
