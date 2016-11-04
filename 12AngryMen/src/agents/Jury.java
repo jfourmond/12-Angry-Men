@@ -10,8 +10,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import metiers.Guilt;
 
 /**
- * 
- * 
+ * Classe abstraite {@link Jury} qui représente un Jury.
  */
 public abstract class Jury extends Agent {
 	private static final long serialVersionUID = 2075278590407410662L;
@@ -51,8 +50,6 @@ public abstract class Jury extends Agent {
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
-		
-		addBehaviour(new WaitingJuries());
 	}
 	
 	@Override
@@ -67,33 +64,5 @@ public abstract class Jury extends Agent {
 		System.out.println(getLocalName() + ":: Départ.");
 	}
 	
-	//	CLASSES INTERNES COMPORTEMENT
-	private class WaitingJuries extends Behaviour {
-		private static final long serialVersionUID = -4284246010322048230L;
 
-		public void action() {
-			DFAgentDescription template = new DFAgentDescription();
-			ServiceDescription sd = new ServiceDescription();
-				sd.setType("jury");
-			template.addServices(sd);
-			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template); 
-				juries = new AID[result.length];
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
-			}
-		}
-
-		@Override
-		public boolean done() {
-			return (juries.length == 12);
-		}
-		
-		@Override
-		public int onEnd() {
-			System.out.println(getLocalName() + ":: Les Jurés sont tous présents.");
-			ready = true;
-			return super.onEnd();
-		}
-	}
 }
