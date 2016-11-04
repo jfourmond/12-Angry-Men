@@ -31,8 +31,7 @@ public class Jury1 extends Jury {
 	
 	//	CLASSES INTERNES COMPORTEMENT
 	/**
-	 * 
-	 * @author Jérôme
+	 * Comportement d'attente de l'arrivée et de l'enregistrement des 12 jurés.
 	 */
 	private class WaitingJuries extends Behaviour {
 		private static final long serialVersionUID = -4284246010322048230L;

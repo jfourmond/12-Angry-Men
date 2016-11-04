@@ -72,6 +72,9 @@ public abstract class Jury extends Agent implements Serializable {
 	}
 	
 	//	CLASSES INTERNES COMPORTEMENTS
+	/**
+	 * Comportement de réception d'une demande de préparation
+	 */
 	private class PerformReady extends Behaviour {
 		private static final long serialVersionUID = -4978924344665073082L;
 		
