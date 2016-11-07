@@ -3,6 +3,7 @@ package agents;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -19,6 +20,8 @@ import metiers.Guilt;
 public abstract class Jury extends Agent implements Serializable {
 	private static final long serialVersionUID = 2075278590407410662L;
 
+	protected static final int NB_JURIES = 12;
+	
 	protected double belief;
 	protected boolean ready;
 	protected AID[] juries;
@@ -31,7 +34,7 @@ public abstract class Jury extends Agent implements Serializable {
 	
 	//	METHODES OBJECT
 	public Guilt belief() {
-		if(belief < 0.5)
+		if(belief < 0.2)
 			return Guilt.GUILTY;
 		else
 			return Guilt.INNOCENT;
@@ -77,7 +80,7 @@ public abstract class Jury extends Agent implements Serializable {
 	private class PerformReady extends Behaviour {
 		private static final long serialVersionUID = -4978924344665073082L;
 		
-		private MessageTemplate mt; // The template to receive replies
+		private MessageTemplate mt;
 		
 		@Override
 		public void action() {
@@ -106,9 +109,25 @@ public abstract class Jury extends Agent implements Serializable {
 		public int onEnd() {
 			ready = true;
 			System.out.println(getLocalName() + ":: Prêt.");
+			myAgent.addBehaviour(new PerformVote());
 			return super.onEnd();
 		}
 		
 	}
 
+	protected class PerformVote extends OneShotBehaviour {
+		private static final long serialVersionUID = -2925922941582026625L;
+
+		@Override
+		public void action() {
+			// Envoi du vote au Jury 1
+			ACLMessage vote = new ACLMessage(ACLMessage.INFORM);
+			vote.addReceiver(juries[0]);
+			
+			vote.setContent(belief() + "");
+			vote.setConversationId("juries-vote");
+			myAgent.send(vote);
+		}
+	}
+	
 }
