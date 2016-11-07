@@ -44,6 +44,8 @@ public class Jury1 extends Jury {
 			try {
 				DFAgentDescription[] result = DFService.search(myAgent, template); 
 				juries = new AID[result.length];
+				for (int i = 0; i < result.length; ++i)
+					juries[i] = result[i].getName();
 			} catch (FIPAException fe) {
 				fe.printStackTrace();
 			}
@@ -56,7 +58,6 @@ public class Jury1 extends Jury {
 		
 		@Override
 		public int onEnd() {
-			System.out.println(getLocalName() + ":: Les Jurés sont tous présents.");
 			// Envoi d'un message à tous les Jury pour leur dire d'être prêt et de "commencer" leurs comportements
 			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 			for (int i = 0; i < juries.length; ++i)

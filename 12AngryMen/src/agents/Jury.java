@@ -45,7 +45,6 @@ public abstract class Jury extends Agent implements Serializable {
 		DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
-			System.out.println(getClass().getSimpleName());
 			sd.setType("jury");
 			sd.setName("JADE-12-angry-men");
 			dfd.addServices(sd);
@@ -100,7 +99,7 @@ public abstract class Jury extends Agent implements Serializable {
 
 		@Override
 		public boolean done() {
-			return (juries.length == 12);
+			return (juries != null && juries.length == 12);
 		}
 		
 		@Override
