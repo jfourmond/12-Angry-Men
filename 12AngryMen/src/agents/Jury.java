@@ -3,6 +3,7 @@ package agents;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -24,6 +25,7 @@ public abstract class Jury extends Agent implements Serializable {
 	
 	protected double belief;
 	protected boolean ready;
+	
 	protected AID[] juries;
 	
 	//	GETTERS
@@ -59,6 +61,7 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 		
 		addBehaviour(new PerformReady());
+		addBehaviour(new ReceivingVote());
 	}
 	
 	@Override
@@ -109,12 +112,28 @@ public abstract class Jury extends Agent implements Serializable {
 		public int onEnd() {
 			ready = true;
 			System.out.println(getLocalName() + ":: Prêt.");
-			myAgent.addBehaviour(new PerformVote());
 			return super.onEnd();
 		}
-		
 	}
 
+	private class ReceivingVote extends CyclicBehaviour {
+		private static final long serialVersionUID = -5188161158793172186L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("asking-vote");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.REQUEST) {
+					addBehaviour(new PerformVote());
+				}
+			} else
+				block();
+		}
+	}
+	
 	protected class PerformVote extends OneShotBehaviour {
 		private static final long serialVersionUID = -2925922941582026625L;
 

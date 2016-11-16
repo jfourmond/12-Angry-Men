@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -24,6 +25,7 @@ public class Jury1 extends Jury {
 		super.setup();
 		
 		addBehaviour(new WaitingJuries());
+		addBehaviour(new ReceiveVoteJuries());
 	}
 	
 	@Override
@@ -105,7 +107,7 @@ public class Jury1 extends Jury {
 		
 		@Override
 		public int onEnd() {
-			// Envoi d'un message à tous les Jury pour leur dire d'être prêt et de "commencer" leurs comportements
+			// Envoi d'un message à tous les Jury pour leur dire d'être prêt
 			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 			for (int i = 0; i < juries.length; ++i)
 				request.addReceiver(juries[i]);
@@ -116,15 +118,33 @@ public class Jury1 extends Jury {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			addBehaviour(new ReceiveVoteJuries());
+			addBehaviour(new AskVoteJuries());
 			return super.onEnd();
 		}
 	}
 	
 	/**
-	 * Comportement d'attente de l'arrivée et de l'enregistrement des 12 jurés.
+	 * Comportement de demande de vote
 	 */
-	private class ReceiveVoteJuries extends OneShotBehaviour {
+	private class AskVoteJuries extends OneShotBehaviour {
+		private static final long serialVersionUID = -4475110771200834870L;
+
+		@Override
+		public void action() {
+			// Envoi d'un message à tous les Jury pour leur dire d'être prêt
+			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+			for (int i = 0; i < juries.length; ++i)
+				request.addReceiver(juries[i]);
+			request.setConversationId("asking-vote");
+			myAgent.send(request);
+		}
+		
+	}
+	
+	/**
+	 * Comportement cyclique de réception des votes des jurés
+	 */
+	private class ReceiveVoteJuries extends CyclicBehaviour {
 		private static final long serialVersionUID = 5363524147069962688L;
 		
 		private MessageTemplate mt;
@@ -135,7 +155,8 @@ public class Jury1 extends Jury {
 			ACLMessage reply = myAgent.receive(mt);
 			if(reply != null) {
 				if(reply.getPerformative() == ACLMessage.INFORM) {
-					System.out.println(reply.getSender() + ":: " + reply.getContent());
+					System.out.println(reply.getSender().getLocalName() + ":: " + reply.getContent());
+					
 				}
 			} else
 				restart();
