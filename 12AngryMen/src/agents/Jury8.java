@@ -2,6 +2,7 @@ package agents;
 
 import java.io.IOException;
 
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import metiers.Argument;
@@ -17,11 +18,29 @@ public class Jury8 extends Jury {
 		super.setup();
 		
 		belief = 1.0;
+		addBehaviour(new OnceReady());
+		addBehaviour(new OnceAllowedToTalk());
 	}
 	
 	@Override
 	protected void takeDown() {
 		super.takeDown();
+	}
+	
+	protected class OnceReady extends Behaviour {
+		private static final long serialVersionUID = -8482394774543485010L;
+
+		@Override
+		public void action() { }
+
+		@Override
+		public boolean done() { return ready; }
+		
+		@Override
+		public int onEnd() {
+			addBehaviour(new AskToTalk());
+			return super.onEnd();
+		}
 	}
 	
 	protected class ExposeDoubt extends OneShotBehaviour {
@@ -37,9 +56,26 @@ public class Jury8 extends Jury {
 				request.setContentObject(arg);
 				request.setConversationId("doubt_jury8");
 				myAgent.send(request);
+				System.out.println(myAgent.getLocalName() + ":: expose ses doutes");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class OnceAllowedToTalk extends Behaviour {
+		private static final long serialVersionUID = -599182665856063880L;
+
+		@Override
+		public void action() { }
+
+		@Override
+		public boolean done() { return allowedToTalk; }
+		
+		@Override
+		public int onEnd() {
+			addBehaviour(new ExposeDoubt());
+			return super.onEnd();
 		}
 	}
 }

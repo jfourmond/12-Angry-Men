@@ -25,14 +25,19 @@ public abstract class Jury extends Agent implements Serializable {
 	
 	protected double belief;
 	protected boolean ready;
+	protected boolean allowedToTalk;
 	
 	protected AID[] juries;
 	
 	//	GETTERS
 	public double getBelief() { return belief; }
 	
+	public boolean isAllowedToTalk() { return allowedToTalk; }
+	
 	//	SETTERS
 	public void setBelief(double belief) { this.belief = belief; }
+	
+	public void setAllowedToTalk(boolean allowedToTalk) { this.allowedToTalk = allowedToTalk; }
 	
 	//	METHODES OBJECT
 	public Guilt belief() {
@@ -46,6 +51,8 @@ public abstract class Jury extends Agent implements Serializable {
 	@Override
 	protected void setup() {
 		System.out.println(getLocalName() + ":: " + "Arrivée.");
+		
+		allowedToTalk = false;
 		
 		DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
@@ -62,6 +69,7 @@ public abstract class Jury extends Agent implements Serializable {
 		
 		addBehaviour(new PerformReady());
 		addBehaviour(new ReceivingVote());
+		addBehaviour(new ReceiveAllowToTalk());
 	}
 	
 	@Override
@@ -74,6 +82,37 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 		
 		System.out.println(getLocalName() + ":: Départ.");
+	}
+	
+	public static Integer getJuriesID(AID agent) {
+		switch(agent.getLocalName()) {
+			case "Jury1" :
+				return 1;
+			case "Jury2" : 
+				return 2;
+			case "Jury3" :
+				return 3;
+			case "Jury4" :
+				return 4;
+			case "Jury5" :
+				return 5;
+			case "Jury6" :
+				return 6;
+			case "Jury7" :
+				return 7;
+			case "Jury8" :
+				return 8;
+			case "Jury9" :
+				return 9;
+			case "Jury10" :
+				return 10;
+			case "Jury11" :
+				return 11;
+			case "Jury12" :
+				return 12;
+			default:
+				return null;
+		}
 	}
 	
 	//	CLASSES INTERNES COMPORTEMENTS
@@ -149,4 +188,33 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	protected class AskToTalk extends OneShotBehaviour {
+		private static final long serialVersionUID = 4316551835965456089L;
+
+		@Override
+		public void action() {
+			// Envoi de la demande au Jury 1
+			ACLMessage vote = new ACLMessage(ACLMessage.REQUEST);
+			vote.addReceiver(juries[0]);
+			vote.setConversationId("asking-to-talk");
+			myAgent.send(vote);
+		}
+	}
+	
+	protected class ReceiveAllowToTalk extends CyclicBehaviour {
+		private static final long serialVersionUID = -2757249674321789741L;
+
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("allowing-to-talk");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+					allowedToTalk = true;
+			} else
+				block();
+		}
+	}
 }
