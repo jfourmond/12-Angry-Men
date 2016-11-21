@@ -56,7 +56,7 @@ public class Jury8 extends Jury {
 				request.setContentObject(arg);
 				request.setConversationId("doubt_jury8");
 				myAgent.send(request);
-				System.out.println(myAgent.getLocalName() + ":: expose ses doutes");
+				System.out.println(myAgent.getLocalName() + ":: expose ses doutes (" + arg + ")");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
