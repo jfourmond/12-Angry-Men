@@ -1,6 +1,6 @@
 package agents;
 
-public class Jury5 extends Jury {
+public class Jury5 extends InnocenceDefenseJury {
 	private static final long serialVersionUID = -5443724775577219581L;
 
 	@Override
