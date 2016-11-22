@@ -155,7 +155,7 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 
-	private class ReceivingVote extends CyclicBehaviour {
+	protected class ReceivingVote extends CyclicBehaviour {
 		private static final long serialVersionUID = -5188161158793172186L;
 		
 		private MessageTemplate mt;
