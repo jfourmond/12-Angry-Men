@@ -169,13 +169,11 @@ public class Jury1 extends NeutralJury {
 		private static final long serialVersionUID = 5363524147069962688L;
 		
 		private MessageTemplate mt;
+		
 		private int countVotes;
-		// private Guilt votes[];
 		
 		@Override
-		public void onStart() {
-			countVotes = 0;
-		}
+		public void onStart() { countVotes = 0; }
 		
 		public void action() {
 			mt = MessageTemplate.MatchConversationId("juries-vote");
@@ -190,6 +188,7 @@ public class Jury1 extends NeutralJury {
 					if(countVotes == 12) {
 						AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
 						addBehaviour(new AllowToTalk(juryWantingToTalk));
+						countVotes = 0;
 					}
 				}
 			} else

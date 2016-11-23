@@ -112,6 +112,7 @@ public class Jury8 extends InnocenceDefenseJury {
 	}
 	
 	private class AnswerToArgument extends OneShotBehaviour {
+		private static final long serialVersionUID = -172427643887737653L;
 		
 		private ACLMessage message;
 		private Argument argument;
@@ -123,7 +124,22 @@ public class Jury8 extends InnocenceDefenseJury {
 		}
 
 		@Override
-		public void action() { }
+		public void action() {
+			switch(argument.getId()) {
+				case 4:
+					ACLMessage reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.3);
+					try {
+						reject.setContentObject(argument);
+						myAgent.send(reject);
+						System.out.println(myAgent.getLocalName() + ":: refuse " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+			}
+		}
 	}
 	
 	private class AnswerToReject extends OneShotBehaviour {

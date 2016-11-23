@@ -27,6 +27,7 @@ public abstract class Jury extends Agent implements Serializable {
 	protected double belief;
 	protected boolean ready;
 	protected boolean allowedToTalk;
+	protected int nbVotes;
 	
 	protected AID[] juries;
 	
@@ -194,6 +195,7 @@ public abstract class Jury extends Agent implements Serializable {
 			vote.setContent(belief() + "");
 			vote.setConversationId("juries-vote");
 			myAgent.send(vote);
+			nbVotes++;
 		}
 	}
 	
