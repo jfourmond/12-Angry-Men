@@ -21,7 +21,7 @@ import metiers.Guilt;
  * Le Jury n°1 est le président / l'arbitre des jurés
  *
  */
-public class Jury1 extends Jury {
+public class Jury1 extends NeutralJury {
 	private static final long serialVersionUID = 4874292225851563156L;
 	
 	private Guilt opinions[];
