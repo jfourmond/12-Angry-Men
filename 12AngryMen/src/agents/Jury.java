@@ -48,7 +48,7 @@ public abstract class Jury extends Agent implements Serializable {
 			return Guilt.INNOCENT;
 	}
 	
-	public void influence(Argument argument) { belief += argument.getStrength(); }
+	public abstract void influence(Argument argument);
 	
 	//	METHODES AGENT
 	@Override
