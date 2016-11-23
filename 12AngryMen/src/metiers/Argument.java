@@ -11,14 +11,9 @@ public class Argument implements Serializable {
 	private double strength;
 	
 	//	CONSTRUCTEURS
-	public Argument(double strength) {
+	public Argument() {
 		this.id = ++ID;
-		this.strength = strength;
-	}
-	
-	public Argument(int id, double strength) {
-		this.id = id;
-		this.strength = strength;
+		this.strength = 0.5;
 	}
 	
 	//	GETTERS
@@ -32,6 +27,10 @@ public class Argument implements Serializable {
 	public void setStrength(double strength) { this.strength = strength; }
 	
 	// METHODES
+	public void giveStrength() { strength++; }
+	
+	public void removeStrength() { strength--; }
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
