@@ -16,6 +16,12 @@ public class Argument implements Serializable {
 		this.strength = 0.5;
 	}
 	
+	public Argument(Argument argument) {
+		this.id = ++ID;
+		this.strength = argument.strength;
+		giveStrength(0.1);
+	}
+	
 	//	GETTERS
 	public int getId() { return id; }
 	
@@ -27,9 +33,9 @@ public class Argument implements Serializable {
 	public void setStrength(double strength) { this.strength = strength; }
 	
 	// METHODES
-	public void giveStrength() { strength++; }
+	public void giveStrength(double add) { strength += add; }
 	
-	public void removeStrength() { strength--; }
+	public void removeStrength(double less) { strength -= less; }
 	
 	@Override
 	public String toString() {

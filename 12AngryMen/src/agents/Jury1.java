@@ -13,6 +13,8 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
+import metiers.Argument;
 import metiers.Guilt;
 
 /**
@@ -45,6 +47,7 @@ public class Jury1 extends Jury {
 		addBehaviour(new WaitingJuries());
 		addBehaviour(new ReceiveVoteJuries());
 		addBehaviour(new ReceiveRequestToTalk());
+		addBehaviour(new ReceiveRequestToVote());
 	}
 	
 	@Override
@@ -195,6 +198,28 @@ public class Jury1 extends Jury {
 	}
 	
 	/**
+	 * Comportement cyclique de réception de la demande de Vote
+	 */
+	private class ReceiveRequestToVote extends CyclicBehaviour {
+		private static final long serialVersionUID = -7996786204438352603L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("request-vote");
+			ACLMessage message = myAgent.receive(mt);
+			if(message != null) {
+				if(message.getPerformative() == ACLMessage.REQUEST) {
+					System.out.println(getLocalName() + ":: demande un vote.");
+					myAgent.addBehaviour(new AskVoteJuries());
+				}
+			} else
+				block();
+		}
+	}
+	
+	/**
 	 * Comportement cyclique de réception de la demande de... Discussion (?)
 	 */
 	private class ReceiveRequestToTalk extends CyclicBehaviour {
@@ -236,6 +261,51 @@ public class Jury1 extends Jury {
 			auto.addReceiver(jury);
 			auto.setConversationId("allowing-to-talk");
 			myAgent.send(auto);
+		}
+	}
+	
+	private class AnswerToArgument extends OneShotBehaviour {
+		private static final long serialVersionUID = 7188408824906352590L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToArgument(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			switch(argument.getId()) {
+				case 3:
+				break;
+			}
+		}
+	}
+	
+	private class ReceiveArgument extends CyclicBehaviour {
+
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("argument");
+			ACLMessage message = myAgent.receive(mt);
+			int performative;
+			if(message != null) {
+				try {
+					performative = message.getPerformative();
+					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToArgument(message));
+					else
+						block();
+				} catch (UnreadableException e) {
+					e.printStackTrace();
+				}
+			} else
+				block();
 		}
 	}
 }

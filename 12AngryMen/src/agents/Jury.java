@@ -13,6 +13,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import jade.util.leap.Serializable;
+import metiers.Argument;
 import metiers.Guilt;
 
 /**
@@ -41,11 +42,13 @@ public abstract class Jury extends Agent implements Serializable {
 	
 	//	METHODES OBJECT
 	public Guilt belief() {
-		if(belief < 0.2)
+		if(belief < 0.8)
 			return Guilt.GUILTY;
 		else
 			return Guilt.INNOCENT;
 	}
+	
+	public void influence(Argument argument) { belief += argument.getStrength(); }
 	
 	//	METHODES AGENT
 	@Override
@@ -113,6 +116,12 @@ public abstract class Jury extends Agent implements Serializable {
 			default:
 				return null;
 		}
+	}
+	
+	public void addJuriesToMessage(ACLMessage message) {
+		int id = getJuriesID(getAID());
+		for(int i = 0; i < juries.length; ++i)
+			if(id != i+1) message.addReceiver(juries[i]);
 	}
 	
 	//	CLASSES INTERNES COMPORTEMENTS

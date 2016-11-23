@@ -23,6 +23,7 @@ public class Jury8 extends InnocenceDefenseJury {
 		belief = 1.0;
 		addBehaviour(new OnceReady());
 		addBehaviour(new OnceAllowedToTalk());
+		addBehaviour(new ReceiveArgument());
 	}
 	
 	@Override
@@ -81,52 +82,117 @@ public class Jury8 extends InnocenceDefenseJury {
 		}
 	}
 	
-	private class AnswerToArgument extends OneShotBehaviour {
-		private static final long serialVersionUID = -2805433556211668554L;
-		
-		private Argument argument;
-		private Boolean accepted;
-		
-		//	CONSTRUCTEURS
-		public AnswerToArgument(Argument argument, Boolean accepted) {
-			this.argument = argument;
-			this.accepted = accepted;
-		}
-
-		@Override
-		public void action() { }
-	}
-	
 	private class ReceiveArgument extends CyclicBehaviour {
+		private static final long serialVersionUID = -9027696336689844480L;
+		
 		private MessageTemplate mt;
 		
 		@Override
 		public void action() {
 			mt = MessageTemplate.MatchConversationId("argument");
-			ACLMessage reply = myAgent.receive(mt);
+			ACLMessage message = myAgent.receive(mt);
 			int performative;
-			Boolean accepted = null;
-			Argument argument;
-			if(reply != null) {
+			if(message != null) {
 				try {
-					performative = reply.getPerformative();
-					argument = (Argument) reply.getContentObject();
-					if(performative == ACLMessage.PROPOSE) {
-						accepted = null;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.ACCEPT_PROPOSAL) {
-						accepted = true;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.REJECT_PROPOSAL) {
-						accepted = false;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else
+					performative = message.getPerformative();
+					if(performative == ACLMessage.PROPOSE)
+						myAgent.addBehaviour(new AnswerToArgument(message));
+					else if(performative == ACLMessage.REJECT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToReject(message));
+					else if(performative == ACLMessage.ACCEPT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToAccept(message));
+					else
 						block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();
 				}
 			} else
 				block();
+		}
+	}
+	
+	private class AnswerToArgument extends OneShotBehaviour {
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToArgument(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() { }
+	}
+	
+	private class AnswerToReject extends OneShotBehaviour {
+		private static final long serialVersionUID = -1808741270435584554L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToReject(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			System.out.println(myAgent.getLocalName() + " :: " + argument + " rejeté");
+			Argument argument = null;
+			switch(this.argument.getId()) {
+				case 1:
+					ACLMessage propose = message.createReply();
+					argument = new Argument(this.argument);
+					try {
+						addJuriesToMessage(propose);
+						propose.setContentObject(argument);
+						myAgent.send(propose);
+						System.out.println(myAgent.getLocalName() + ":: proposition revue : " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 2:
+					propose = message.createReply();
+					argument = new Argument(this.argument);
+					try {
+						addJuriesToMessage(propose);
+						propose.setContentObject(argument);
+						myAgent.send(propose);
+						System.out.println(myAgent.getLocalName() + ":: proposition revue : " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+			}
+		}
+	}
+	
+	private class AnswerToAccept extends OneShotBehaviour {
+		private static final long serialVersionUID = -1389941174321104501L;
+		
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToAccept(ACLMessage message) throws UnreadableException {
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			System.out.println(myAgent.getLocalName() + ":: " + argument + " accepté");
+			switch(argument.getId()) {
+				case 3:
+					ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+					request.setConversationId("request-vote");
+					request.addReceiver(juries[0]);
+					myAgent.send(request);
+					System.out.println(myAgent.getLocalName() + ":: demande un vote au Jury 1.");
+				break;
+			}
 		}
 	}
 }
