@@ -16,6 +16,7 @@ public class Jury5 extends InnocenceDefenseJury {
 	protected void setup() {
 		super.setup();
 		
+		belief = 0.0;
 		addBehaviour(new ReceiveArgument());
 	}
 	
@@ -46,7 +47,19 @@ public class Jury5 extends InnocenceDefenseJury {
 					try {
 						reject.setContentObject(argument);
 						myAgent.send(reject);
-						System.out.println(myAgent.getLocalName() + ":: refuse " + argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 6:
+					ACLMessage accept = message.createReply();
+					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+					try {
+						accept.setContentObject(argument);
+						myAgent.send(accept);
+						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
+						influence(argument);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

@@ -1,5 +1,7 @@
 package agents;
 
+import java.io.IOException;
+
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -14,7 +16,7 @@ public class Jury10 extends GuiltyFighterJury {
 	protected void setup() {
 		super.setup();
 		
-		belief = 0.5;
+		belief = 0.0;
 		addBehaviour(new ReceiveArgument());
 	}
 	
@@ -37,8 +39,20 @@ public class Jury10 extends GuiltyFighterJury {
 
 		@Override
 		public void action() {
+			ACLMessage reject = null;
 			switch(argument.getId()) {
-				case 3:
+				case 7:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(1.0);	// Rejet très fort
+					addJuriesToMessage(reject);
+					try {
+						reject.setContentObject(argument);
+						myAgent.send(reject);
+						System.out.println(myAgent.getLocalName() + ":: STRONG REJECT " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				break;
 			}
 		}

@@ -27,6 +27,8 @@ public class Jury1 extends NeutralJury {
 	private Guilt opinions[];
 	private LinkedList<AID> juriesWantingToTalk;
 	
+	private int countVotes;
+	
 	//	GETTERS
 	public Guilt[] getOpinions() { return opinions; }
 	
@@ -153,7 +155,7 @@ public class Jury1 extends NeutralJury {
 		
 		@Override
 		public void action() {
-			// Envoi d'un message à tous les Jury pour leur dire d'être prêt
+			countVotes = 0;
 			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 			for (int i = 0; i < juries.length; ++i)
 				request.addReceiver(juries[i]);
@@ -170,11 +172,6 @@ public class Jury1 extends NeutralJury {
 		
 		private MessageTemplate mt;
 		
-		private int countVotes;
-		
-		@Override
-		public void onStart() { countVotes = 0; }
-		
 		public void action() {
 			mt = MessageTemplate.MatchConversationId("juries-vote");
 			ACLMessage reply = myAgent.receive(mt);
@@ -188,7 +185,6 @@ public class Jury1 extends NeutralJury {
 					if(countVotes == 12) {
 						AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
 						addBehaviour(new AllowToTalk(juryWantingToTalk));
-						countVotes = 0;
 					}
 				}
 			} else

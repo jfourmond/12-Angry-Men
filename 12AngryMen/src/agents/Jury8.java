@@ -20,7 +20,7 @@ public class Jury8 extends InnocenceDefenseJury {
 	protected void setup() {
 		super.setup();
 		
-		belief = 1.0;
+		belief = 0.8;
 		addBehaviour(new OnceReady());
 		addBehaviour(new OnceAllowedToTalk());
 		addBehaviour(new ReceiveArgument());
@@ -31,7 +31,7 @@ public class Jury8 extends InnocenceDefenseJury {
 		super.takeDown();
 	}
 	
-	protected class OnceReady extends Behaviour {
+	private class OnceReady extends Behaviour {
 		private static final long serialVersionUID = -8482394774543485010L;
 
 		@Override
@@ -47,25 +47,6 @@ public class Jury8 extends InnocenceDefenseJury {
 		}
 	}
 	
-	protected class ExposeDoubt extends OneShotBehaviour {
-		private static final long serialVersionUID = -2925922941582026625L;
-
-		@Override
-		public void action() {
-			Argument arg = new Argument();
-			ACLMessage doubt = new ACLMessage(ACLMessage.PROPOSE);
-			addJuriesToMessage(doubt);
-			try {
-				doubt.setContentObject(arg);
-				doubt.setConversationId("argument");
-				myAgent.send(doubt);
-				System.out.println(myAgent.getLocalName() + ":: expose ses doutes (" + arg + ")");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	private class OnceAllowedToTalk extends Behaviour {
 		private static final long serialVersionUID = -599182665856063880L;
 
@@ -77,7 +58,7 @@ public class Jury8 extends InnocenceDefenseJury {
 		
 		@Override
 		public int onEnd() {
-			addBehaviour(new ExposeDoubt());
+			addBehaviour(new ExposeArgument(new Argument(), juries));
 			return super.onEnd();
 		}
 	}
@@ -125,15 +106,29 @@ public class Jury8 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
+			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 4:
-					ACLMessage reject = message.createReply();
+					reject = message.createReply();
 					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
 					argument.removeStrength(0.3);
 					try {
 						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
 						myAgent.send(reject);
-						System.out.println(myAgent.getLocalName() + ":: refuse " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 5:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.3);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+						myAgent.send(reject);
+						myAgent.addBehaviour(new ExposeArgument(new Argument(), juries));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -156,7 +151,6 @@ public class Jury8 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
-			System.out.println(myAgent.getLocalName() + " :: " + argument + " rejeté");
 			Argument argument = null;
 			switch(this.argument.getId()) {
 				case 1:
@@ -164,9 +158,10 @@ public class Jury8 extends InnocenceDefenseJury {
 					argument = new Argument(this.argument);
 					try {
 						addJuriesToMessage(propose);
+						propose.setPerformative(ACLMessage.PROPOSE);
 						propose.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE : " + argument);
 						myAgent.send(propose);
-						System.out.println(myAgent.getLocalName() + ":: proposition revue : " + argument);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -176,12 +171,16 @@ public class Jury8 extends InnocenceDefenseJury {
 					argument = new Argument(this.argument);
 					try {
 						addJuriesToMessage(propose);
+						propose.setPerformative(ACLMessage.PROPOSE);
 						propose.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE : " + argument);
 						myAgent.send(propose);
-						System.out.println(myAgent.getLocalName() + ":: proposition revue : " + argument);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				break;
+				case 7:
+					addBehaviour(new ExposeArgument(new Argument(), juries));
 				break;
 			}
 		}
@@ -190,24 +189,32 @@ public class Jury8 extends InnocenceDefenseJury {
 	private class AnswerToAccept extends OneShotBehaviour {
 		private static final long serialVersionUID = -1389941174321104501L;
 		
+		private ACLMessage message;
 		private Argument argument;
 		
 		//	CONSTRUCTEURS
 		public AnswerToAccept(ACLMessage message) throws UnreadableException {
-			argument = (Argument) message.getContentObject();
+			this.message = message;
+			argument = (Argument) this.message.getContentObject();
 		}
 
 		@Override
 		public void action() {
-			System.out.println(myAgent.getLocalName() + ":: " + argument + " accepté");
+			System.out.println(myAgent.getLocalName() + ":: " + argument + " ACCEPTED");
 			switch(argument.getId()) {
 				case 3:
 					ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 					request.setConversationId("request-vote");
 					request.addReceiver(juries[0]);
-					myAgent.send(request);
 					System.out.println(myAgent.getLocalName() + ":: demande un vote au Jury 1.");
+					myAgent.send(request);
 				break;
+			}
+			try {
+				addBehaviour(new Influence(message));
+			} catch (UnreadableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}

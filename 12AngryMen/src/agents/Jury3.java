@@ -2,7 +2,6 @@ package agents;
 
 import java.io.IOException;
 
-import agents.Jury8.ExposeDoubt;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -59,27 +58,8 @@ public class Jury3 extends GuiltyFighterJury {
 		
 		@Override
 		public int onEnd() {
-			addBehaviour(new ExposeArgument());
+			addBehaviour(new ExposeArgument(new Argument(), juries[7]));
 			return super.onEnd();
-		}
-	}
-	
-	protected class ExposeArgument extends OneShotBehaviour {
-		private static final long serialVersionUID = 4384661119352078559L;
-
-		@Override
-		public void action() {
-			Argument arg = new Argument();
-			ACLMessage doubt = new ACLMessage(ACLMessage.PROPOSE);
-			doubt.addReceiver(juries[7]);	// Attaque personnelle du Jury 8
-			try {
-				doubt.setContentObject(arg);
-				doubt.setConversationId("argument");
-				myAgent.send(doubt);
-				System.out.println(myAgent.getLocalName() + ":: expose son argument (" + arg + ")");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 	
@@ -97,15 +77,40 @@ public class Jury3 extends GuiltyFighterJury {
 
 		@Override
 		public void action() {
+			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 1:
-					ACLMessage reject = message.createReply();
+					reject = message.createReply();
 					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
 					argument.removeStrength(0.2);
 					try {
 						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
 						myAgent.send(reject);
-						System.out.println(myAgent.getLocalName() + ":: refuse " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 6:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.2);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+						myAgent.send(reject);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 8:	//REJET FAIBLE
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.1);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: WEAK REJECT " + argument);
+						myAgent.send(reject);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -127,8 +132,13 @@ public class Jury3 extends GuiltyFighterJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
+					else if(performative == ACLMessage.REJECT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToReject(message));
+					else if(performative == ACLMessage.ACCEPT_PROPOSAL)
+						// TODO code
+						System.err.println("TODO");
 					else
 						block();
 				} catch (UnreadableException e) {
@@ -136,6 +146,39 @@ public class Jury3 extends GuiltyFighterJury {
 				}
 			} else
 				block();
+		}
+	}
+
+	private class AnswerToReject extends OneShotBehaviour {
+		private static final long serialVersionUID = -1808741270435584554L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToReject(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			System.out.println(myAgent.getLocalName() + ":: " + argument + " REJECTED");
+			Argument argument = null;
+			switch(this.argument.getId()) {
+				case 4:
+					ACLMessage propose = message.createReply();
+					argument = new Argument(this.argument);
+					try {
+						propose.setPerformative(ACLMessage.PROPOSE);
+						propose.setContentObject(argument);
+						myAgent.send(propose);
+						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+			}
 		}
 	}
 }

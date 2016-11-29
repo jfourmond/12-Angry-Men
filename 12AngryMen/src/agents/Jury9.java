@@ -39,14 +39,28 @@ public class Jury9 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
+			ACLMessage accept = null;
 			switch(argument.getId()) {
 				case 3:
-					ACLMessage accept = message.createReply();
+					accept = message.createReply();
 					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 					try {
 						accept.setContentObject(argument);
 						myAgent.send(accept);
 						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 6:
+					accept = message.createReply();
+					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+					try {
+						accept.setContentObject(argument);
+						myAgent.send(accept);
+						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
+						influence(argument);
+						myAgent.addBehaviour(new ExposeArgument(new Argument(), juries));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
