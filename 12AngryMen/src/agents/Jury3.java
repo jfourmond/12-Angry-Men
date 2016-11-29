@@ -107,6 +107,7 @@ public class Jury3 extends GuiltyFighterJury {
 					reject = message.createReply();
 					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
 					argument.removeStrength(0.1);
+					addJuriesToMessage(reject);
 					try {
 						reject.setContentObject(argument);
 						System.out.println(myAgent.getLocalName() + ":: WEAK REJECT " + argument);
@@ -163,20 +164,9 @@ public class Jury3 extends GuiltyFighterJury {
 
 		@Override
 		public void action() {
-			System.out.println(myAgent.getLocalName() + ":: " + argument + " REJECTED");
-			Argument argument = null;
 			switch(this.argument.getId()) {
 				case 4:
-					ACLMessage propose = message.createReply();
-					argument = new Argument(this.argument);
-					try {
-						propose.setPerformative(ACLMessage.PROPOSE);
-						propose.setContentObject(argument);
-						myAgent.send(propose);
-						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE " + argument);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new ReviewArgument(message, this.argument));
 				break;
 			}
 		}

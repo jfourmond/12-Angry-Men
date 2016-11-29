@@ -151,36 +151,19 @@ public class Jury8 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
-			Argument argument = null;
 			switch(this.argument.getId()) {
 				case 1:
-					ACLMessage propose = message.createReply();
-					argument = new Argument(this.argument);
-					try {
-						addJuriesToMessage(propose);
-						propose.setPerformative(ACLMessage.PROPOSE);
-						propose.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE : " + argument);
-						myAgent.send(propose);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new ReviewArgument(message, this.argument, juries));
 				break;
 				case 2:
-					propose = message.createReply();
-					argument = new Argument(this.argument);
-					try {
-						addJuriesToMessage(propose);
-						propose.setPerformative(ACLMessage.PROPOSE);
-						propose.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE : " + argument);
-						myAgent.send(propose);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new ReviewArgument(message, this.argument, juries));
 				break;
 				case 7:
 					addBehaviour(new ExposeArgument(new Argument(), juries));
+				break;
+				case 8:
+					if(message.getSender().equals(juries[0]))
+						addBehaviour(new ExposeArgument(new Argument(), juries));
 				break;
 			}
 		}

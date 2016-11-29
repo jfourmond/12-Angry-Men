@@ -17,7 +17,6 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import jade.tools.sniffer.Message;
 import jade.util.leap.Serializable;
 import metiers.Argument;
 import metiers.Guilt;
@@ -267,8 +266,8 @@ public abstract class Jury extends Agent implements Serializable {
 	protected class ExposeArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 4384661119352078559L;
 
-		private Argument argument;
-		private List<AID> juries;
+		protected Argument argument;
+		protected List<AID> juries;
 		
 		public ExposeArgument(Argument argument, AID ...juries) {
 			this.argument = argument;
@@ -305,17 +304,17 @@ public abstract class Jury extends Agent implements Serializable {
 		private static final long serialVersionUID = 6444800688132660995L;
 		
 		private Argument newArgument;
-		private Message message;
+		private ACLMessage message;
 		
-		public ReviewArgument(Message message, Argument argument, AID ...juries) {
+		public ReviewArgument(ACLMessage message, Argument argument, AID ...juries) {
 			super(argument, juries);
-			newArgument = new Argument(argument);
 			this.message = message;
 		}
 		
 		@Override
 		public void action() {
 			ACLMessage propose = message.createReply();
+			newArgument = new Argument(argument);
 			try {
 				addReceiver(propose);
 				propose.setPerformative(ACLMessage.PROPOSE);
