@@ -79,6 +79,7 @@ public abstract class Jury extends Agent implements Serializable {
 		addBehaviour(new PerformReady());
 		addBehaviour(new ReceivingVote());
 		addBehaviour(new ReceiveAllowToTalk());
+		addBehaviour(new ReceiveInfluence());
 	}
 	
 	@Override
@@ -273,7 +274,6 @@ public abstract class Jury extends Agent implements Serializable {
 			this.juries = new ArrayList<>();
 			for(AID jury : juries)
 				this.juries.add(jury);
-			System.out.println(juries.length + " in " + argument);
 		}
 		
 		private void addReceiver(ACLMessage message) {
@@ -292,6 +292,65 @@ public abstract class Jury extends Agent implements Serializable {
 				myAgent.send(message);
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	protected class ReceiveInfluence extends Behaviour {
+		private static final long serialVersionUID = -4389290339335043917L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("influence");
+			ACLMessage influence = myAgent.receive(mt);
+			if(influence != null) {
+				if(influence.getPerformative() == ACLMessage.PROPAGATE) {
+					try {
+						Argument argument = (Argument) influence.getContentObject();
+						influence(argument);
+						System.out.println(getLocalName() + ":: INFLUENCED BY " + argument);
+					} catch(UnreadableException e) {
+						e.printStackTrace();
+					}
+				}
+			} else
+				block();
+		}
+
+		@Override
+		public boolean done() { return belief() == Guilt.INNOCENT; }
+		
+	}
+	
+	/**
+	 * Comportement à exécution unique pour influencer un juré
+	 */
+	protected class Influence extends OneShotBehaviour {
+		private static final long serialVersionUID = 3311163181612119608L;
+		
+		private ACLMessage message;
+		private AID jury;
+		private Argument argument;
+		
+		public Influence(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			jury = message.getSender();
+			argument = (Argument) this.message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			ACLMessage message = this.message.createReply();
+			try {
+				message.setPerformative(ACLMessage.PROPAGATE);
+				message.setContentObject(argument);
+				message.setConversationId("influence");
+				myAgent.send(message);
+				System.out.println(myAgent.getLocalName() + ":: INFLUENCE " + jury.getLocalName());
+			} catch (IOException e) {
+					e.printStackTrace();
 			}
 		}
 	}
