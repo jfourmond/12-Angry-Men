@@ -24,3 +24,5 @@ Le film **"12 hommes en colère"** film met en scène, dans les Etats‐Unis des
 Dans un juré composé de douze hommes, onze sont convaincus de sa culpabilité. Cependant le douzième, lui a quelques doutes et estime qu’il est de leur devoir d’en discuter. Ce qui est obligatoire car le vote du jury doit être unanime. Un long débat commence, débat dans lequel le douzième juré s’efforce de convaincre les autres qu’il y a lieu d’avoir un doute à défaut d’être convaincu de l’innocence de l’adolescent.
 
 C’est ce débat qui doit être modélisé et simulé pour parvenir à un accord commun satisfaisant tous les participants.
+
+	java jade.boot -gui Jury1:agents.Jury1;Jury2:agents.Jury2;Jury3:agents.Jury3;Jury4:agents.Jury4;Jury5:agents.Jury5;Jury6:agents.Jury6;Jury7:agents.Jury7;Jury8:agents.Jury8;Jury9:agents.Jury9;Jury10:agents.Jury10;Jury11:agents.Jury11;Jury12:agents.Jury12;
