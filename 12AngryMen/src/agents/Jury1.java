@@ -50,6 +50,8 @@ public class Jury1 extends NeutralJury {
 		addBehaviour(new ReceiveVoteJuries());
 		addBehaviour(new ReceiveRequestToTalk());
 		addBehaviour(new ReceiveRequestToVote());
+		addBehaviour(new ReceiveArgument());
+		addBehaviour(new ReceiveRequestChangeVote());
 	}
 	
 	@Override
@@ -214,6 +216,25 @@ public class Jury1 extends NeutralJury {
 		}
 	}
 	
+	private class ReceiveRequestChangeVote extends CyclicBehaviour {
+		private static final long serialVersionUID = -531435194037473825L;
+		
+		private MessageTemplate mt;
+		
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("change-vote");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.REQUEST) {
+					AID jury = reply.getSender();
+					int id = getJuriesID(jury);
+					opinions[id-1] = Guilt.parse(reply.getContent());
+					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions[id-1]);
+				}
+			} else
+				block();
+		}
+	}
 	/**
 	 * Comportement cyclique de réception de la demande de... Discussion (?)
 	 */
@@ -281,7 +302,8 @@ public class Jury1 extends NeutralJury {
 	}
 	
 	private class ReceiveArgument extends CyclicBehaviour {
-
+		private static final long serialVersionUID = 3440554003187849924L;
+		
 		private MessageTemplate mt;
 		
 		@Override
@@ -292,8 +314,10 @@ public class Jury1 extends NeutralJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL)
 						myAgent.addBehaviour(new AnswerToArgument(message));
+					else if(performative == ACLMessage.REJECT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToReject(message));
 					else
 						block();
 				} catch (UnreadableException e) {
@@ -301,6 +325,39 @@ public class Jury1 extends NeutralJury {
 				}
 			} else
 				block();
+		}
+	}
+	
+	private class AnswerToReject extends OneShotBehaviour {
+		private static final long serialVersionUID = -1808741270435584554L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToReject(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			ACLMessage reject = null;
+			switch(this.argument.getId()) {
+				case 8:	// REJET DU REJET
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.giveStrength(0.2);
+					addJuriesToMessage(reject);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT REJECT " + argument);
+						myAgent.send(reject);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+			}
 		}
 	}
 }

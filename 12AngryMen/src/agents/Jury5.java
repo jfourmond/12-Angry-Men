@@ -2,6 +2,8 @@ package agents;
 
 import java.io.IOException;
 
+import agents.Jury.ExposeArgument;
+import agents.Jury.ReviewArgument;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -81,8 +83,10 @@ public class Jury5 extends InnocenceDefenseJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL)
 						myAgent.addBehaviour(new AnswerToArgument(message));
+					else if(performative == ACLMessage.REJECT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToReject(message));
 					else
 						block();
 				} catch (UnreadableException e) {
@@ -90,6 +94,29 @@ public class Jury5 extends InnocenceDefenseJury {
 				}
 			} else
 				block();
+		}
+	}
+	
+	private class AnswerToReject extends OneShotBehaviour {
+		private static final long serialVersionUID = -6787394496748513050L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToReject(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			switch(this.argument.getId()) {
+				case 9:
+					// Demande à Jury1 s'il peut changer son vote en non-coupable
+					myAgent.addBehaviour(new RequestChangeVote());
+				break;
+			}
 		}
 	}
 }

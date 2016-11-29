@@ -224,6 +224,21 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	protected class RequestChangeVote extends OneShotBehaviour {
+		private static final long serialVersionUID = 597974196410566448L;
+
+		@Override
+		public void action() {
+			// Envoi de la demande au Jury 1
+			ACLMessage vote = new ACLMessage(ACLMessage.REQUEST);
+			vote.addReceiver(juries[0]);
+			vote.setContent(belief() + "");
+			vote.setConversationId("change-vote");
+			System.out.println(myAgent.getLocalName() + ":: REQUEST CHANGE VOTE " + belief());
+			myAgent.send(vote);
+		}
+	}
+	
 	/**
 	 * Comportement à exécution unique de demande au {@link Jury1} l'autorisation de parler
 	 */
