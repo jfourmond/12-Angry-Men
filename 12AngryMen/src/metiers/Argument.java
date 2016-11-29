@@ -33,11 +33,19 @@ public class Argument implements Serializable {
 	public void setStrength(double strength) { this.strength = strength; }
 	
 	// METHODES
+	/**
+	 * Augmenter de <code>add</code> la force
+	 * @param add : valeur à incrémenter à la force
+	 */
 	public void giveStrength(double add) {
 		strength += add;
 		if(strength > 1.0) strength = 1.0;
 	}
 	
+	/**
+	 * Diminuer de <code>less</code> la force
+	 * @param less : valeur à décrémenter à la force
+	 */
 	public void removeStrength(double less) {
 		strength -= less;
 		if(strength < 0) strength = 0;
