@@ -17,6 +17,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
+import jade.tools.sniffer.Message;
 import jade.util.leap.Serializable;
 import metiers.Argument;
 import metiers.Guilt;
@@ -276,7 +277,7 @@ public abstract class Jury extends Agent implements Serializable {
 				this.juries.add(jury);
 		}
 		
-		private void addReceiver(ACLMessage message) {
+		protected void addReceiver(ACLMessage message) {
 			for(AID aid : juries)
 				message.addReceiver(aid);
 		}
@@ -290,6 +291,37 @@ public abstract class Jury extends Agent implements Serializable {
 				message.setConversationId("argument");
 				System.out.println(myAgent.getLocalName() + ":: PROPOSE " + argument);
 				myAgent.send(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Comporement à exécution unique envoyant un argument revu aux jurés ayant refusé,
+	 * ainsi qu'aux jurés passées en paramètre
+	 */
+	protected class ReviewArgument extends ExposeArgument {
+		private static final long serialVersionUID = 6444800688132660995L;
+		
+		private Argument newArgument;
+		private Message message;
+		
+		public ReviewArgument(Message message, Argument argument, AID ...juries) {
+			super(argument, juries);
+			newArgument = new Argument(argument);
+			this.message = message;
+		}
+		
+		@Override
+		public void action() {
+			ACLMessage propose = message.createReply();
+			try {
+				addReceiver(propose);
+				propose.setPerformative(ACLMessage.PROPOSE);
+				propose.setContentObject(newArgument);
+				System.out.println(myAgent.getLocalName() + ":: REVIEW PROPOSE : " + newArgument);
+				myAgent.send(propose);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
