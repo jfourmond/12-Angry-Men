@@ -1,5 +1,10 @@
 package agents;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -119,10 +124,23 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	public static boolean isJuryReceiver(ACLMessage message, AID jury) {
+		Iterator<AID> it = message.getAllReceiver();
+		while(it.hasNext()) {
+			AID aid = it.next();
+			if(aid.equals(jury))
+				return true;
+		}
+		return false;
+	}
+	
 	public void addJuriesToMessage(ACLMessage message) {
 		int id = getJuriesID(getAID());
-		for(int i = 0; i < juries.length; ++i)
-			if(id != i+1) message.addReceiver(juries[i]);
+		for(int i = 0; i < juries.length; ++i) {
+			AID jury = juries[i];
+			if(id != i+1 && !isJuryReceiver(message, jury))
+				message.addReceiver(jury);
+		}
 	}
 	
 	//	CLASSES INTERNES COMPORTEMENTS
@@ -165,6 +183,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 
+	/**
+	 * Comportement cyclique de réception d'une demande de vote
+	 */
 	protected class ReceivingVote extends CyclicBehaviour {
 		private static final long serialVersionUID = -5188161158793172186L;
 		
@@ -183,6 +204,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique envoyant un vote au {@link Jury1}
+	 */
 	protected class PerformVote extends OneShotBehaviour {
 		private static final long serialVersionUID = -2925922941582026625L;
 
@@ -199,6 +223,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de demande au {@link Jury1} l'autorisation de parler
+	 */
 	protected class AskToTalk extends OneShotBehaviour {
 		private static final long serialVersionUID = 4316551835965456089L;
 
@@ -212,6 +239,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception de l'autorisation de parler
+	 */
 	protected class ReceiveAllowToTalk extends CyclicBehaviour {
 		private static final long serialVersionUID = -2757249674321789741L;
 
@@ -226,6 +256,43 @@ public abstract class Jury extends Agent implements Serializable {
 					allowedToTalk = true;
 			} else
 				block();
+		}
+	}
+	
+	/**
+	 * Comporement à exécution unique envoyant un argument aux jurés passé en paramètre au constructeur
+	 */
+	protected class ExposeArgument extends OneShotBehaviour {
+		private static final long serialVersionUID = 4384661119352078559L;
+
+		private Argument argument;
+		private List<AID> juries;
+		
+		public ExposeArgument(Argument argument, AID ...juries) {
+			this.argument = argument;
+			this.juries = new ArrayList<>();
+			for(AID jury : juries)
+				this.juries.add(jury);
+			System.out.println(juries.length + " in " + argument);
+		}
+		
+		private void addReceiver(ACLMessage message) {
+			for(AID aid : juries)
+				message.addReceiver(aid);
+		}
+		
+		@Override
+		public void action() {
+			ACLMessage message = new ACLMessage(ACLMessage.PROPOSE);
+			addReceiver(message);
+			try {
+				message.setContentObject(argument);
+				message.setConversationId("argument");
+				System.out.println(myAgent.getLocalName() + ":: PROPOSE " + argument);
+				myAgent.send(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
