@@ -46,8 +46,7 @@ public class Jury9 extends InnocenceDefenseJury {
 					try {
 						accept.setContentObject(argument);
 						myAgent.send(accept);
-						System.out.println(myAgent.getLocalName() + ":: accepte " + argument);
-						influence(argument);
+						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
