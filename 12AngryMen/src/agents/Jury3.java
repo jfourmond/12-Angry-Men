@@ -1,7 +1,5 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -77,44 +75,15 @@ public class Jury3 extends GuiltyFighterJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 1:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.2);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2));
 				break;
 				case 6:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.2);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2));
 				break;
 				case 8:	//REJET FAIBLE
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.1);
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: WEAK REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.1, juries));
 				break;
 			}
 		}

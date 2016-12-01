@@ -104,7 +104,6 @@ public class Jury8 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 4:
 					myAgent.addBehaviour(new RejectArgument(message, argument));

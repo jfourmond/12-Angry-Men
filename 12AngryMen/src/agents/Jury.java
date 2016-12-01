@@ -366,7 +366,8 @@ public abstract class Jury extends Agent implements Serializable {
 		
 		protected void addReceiver(ACLMessage message) {
 			for(AID aid : juries)
-				message.addReceiver(aid);
+				if(aid != myAgent.getAID())
+					message.addReceiver(aid);
 		}
 		
 		@Override

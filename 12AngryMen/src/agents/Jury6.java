@@ -13,6 +13,8 @@ public class Jury6 extends NeutralJury {
 	@Override
 	protected void setup() {
 		super.setup();
+		
+		addBehaviour(new ReceiveArgument());
 	}
 	
 	@Override
@@ -21,47 +23,43 @@ public class Jury6 extends NeutralJury {
 	}
 	
 	private class AnswerToArgument extends OneShotBehaviour {
-		private static final long serialVersionUID = -2805433556211668554L;
+		private static final long serialVersionUID = -42618592389592504L;
 		
+		private ACLMessage message;
 		private Argument argument;
-		private Boolean accepted;
 		
 		//	CONSTRUCTEURS
-		public AnswerToArgument(Argument argument, Boolean accepted) {
-			this.argument = argument;
-			this.accepted = accepted;
+		public AnswerToArgument(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
 		}
 
 		@Override
-		public void action() { }
+		public void action() {
+			switch(argument.getId()) {
+				case 1:
+					
+				break;
+			}
+		}
 	}
 	
 	private class ReceiveArgument extends CyclicBehaviour {
-		private static final long serialVersionUID = -4804003371667219349L;
-
+		private static final long serialVersionUID = 2164912534474908058L;
+		
 		private MessageTemplate mt;
 		
 		@Override
 		public void action() {
 			mt = MessageTemplate.MatchConversationId("argument");
-			ACLMessage reply = myAgent.receive(mt);
+			ACLMessage message = myAgent.receive(mt);
 			int performative;
-			Boolean accepted = null;
-			Argument argument;
-			if(reply != null) {
+			if(message != null) {
 				try {
-					performative = reply.getPerformative();
-					argument = (Argument) reply.getContentObject();
-					if(performative == ACLMessage.PROPOSE) {
-						accepted = null;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.ACCEPT_PROPOSAL) {
-						accepted = true;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.REJECT_PROPOSAL) {
-						accepted = false;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else
+					performative = message.getPerformative();
+					if(performative == ACLMessage.PROPOSE)
+						myAgent.addBehaviour(new AnswerToArgument(message));
+					else
 						block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();

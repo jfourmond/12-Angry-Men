@@ -55,30 +55,10 @@ public class Jury10 extends GuiltyFighterJury {
 					}
 				break;
 				case 9:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.2);
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
 				break;
 				case 15:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.2);
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
 				break;
 			}
 		}
@@ -97,7 +77,7 @@ public class Jury10 extends GuiltyFighterJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
 					else
 						block();

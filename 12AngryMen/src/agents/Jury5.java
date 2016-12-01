@@ -1,7 +1,5 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -41,16 +39,7 @@ public class Jury5 extends InnocenceDefenseJury {
 		public void action() {
 			switch(argument.getId()) {
 				case 2:
-					ACLMessage reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.2);
-					try {
-						reject.setContentObject(argument);
-						myAgent.send(reject);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2));
 				break;
 				case 6:
 					myAgent.addBehaviour(new AcceptArgument(message, argument));

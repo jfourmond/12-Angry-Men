@@ -61,7 +61,7 @@ public class Argument implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Argument : { id: " + id + ", " + belief + ",strength: " + strength + " }");
+		sb.append("Argument : { id: " + id + ", " + belief + ", strength: " + strength + " }");
 		return sb.toString();
 	}
 }

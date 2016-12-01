@@ -1,7 +1,5 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -40,13 +38,13 @@ public class Jury11 extends NeutralJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 10:
 					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
 					myAgent.addBehaviour(new ExposeArgument(new Argument(Belief.INNOCENT), juries));
 				break;
 				case 13:
+					System.out.println("13 ?");
 					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
 				break;
 				case 15:
@@ -71,8 +69,13 @@ public class Jury11 extends NeutralJury {
 					performative = message.getPerformative();
 					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
-					else
-						block();
+					else if(performative == ACLMessage.REJECT_PROPOSAL )
+						// TODO
+						System.out.print("");
+					else if(performative == ACLMessage.ACCEPT_PROPOSAL)
+						// TODO
+						System.out.print("");
+					else block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();
 				}

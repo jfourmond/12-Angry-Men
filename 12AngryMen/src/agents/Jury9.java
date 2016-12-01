@@ -1,7 +1,5 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -40,31 +38,13 @@ public class Jury9 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
-			ACLMessage accept = null;
 			switch(argument.getId()) {
 				case 3:
-					accept = message.createReply();
-					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-					try {
-						accept.setContentObject(argument);
-						myAgent.send(accept);
-						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 				case 6:
-					accept = message.createReply();
-					accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-					try {
-						accept.setContentObject(argument);
-						myAgent.send(accept);
-						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
-						influence(argument);
-						myAgent.addBehaviour(new ExposeArgument(new Argument(Belief.INNOCENT), juries));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(Belief.INNOCENT), juries));
 				break;
 			}
 		}
@@ -83,7 +63,7 @@ public class Jury9 extends InnocenceDefenseJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.ACCEPT_PROPOSAL || performative == ACLMessage.REJECT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
 					else
 						block();

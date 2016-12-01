@@ -1,7 +1,5 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -37,33 +35,25 @@ public class Jury12 extends NeutralJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 11:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.3);
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
 				break;
 				case 12:
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
+					/*
 					reject = message.createReply();
 					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
 					argument.removeStrength(0.3);
 					try {
 						reject.setContentObject(argument);
 						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject);
-						myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+						myAgent.send(reject); */
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					/*
 					} catch (IOException e) {
 						e.printStackTrace();
-					}
+					} */
 				break;
 			}
 		}
@@ -82,10 +72,15 @@ public class Jury12 extends NeutralJury {
 			if(message != null) {
 				try {
 					performative = message.getPerformative();
-					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.REJECT_PROPOSAL || performative == ACLMessage.ACCEPT_PROPOSAL)
+					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
-					else
-						block();
+					else if(performative == ACLMessage.REJECT_PROPOSAL )
+						// TODO
+						System.out.print("");
+					else if(performative == ACLMessage.ACCEPT_PROPOSAL)
+						// TODO
+						System.out.print("");
+					else block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();
 				}
