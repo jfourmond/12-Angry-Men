@@ -19,7 +19,7 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import jade.util.leap.Serializable;
 import metiers.Argument;
-import metiers.Guilt;
+import metiers.Belief;
 
 /**
  * Classe abstraite {@link Jury} qui représente un Jury.
@@ -47,11 +47,11 @@ public abstract class Jury extends Agent implements Serializable {
 	public void setAllowedToTalk(boolean allowedToTalk) { this.allowedToTalk = allowedToTalk; }
 	
 	//	METHODES OBJECT
-	public Guilt belief() {
+	public Belief belief() {
 		if(belief < 0.8)
-			return Guilt.GUILTY;
+			return Belief.GUILTY;
 		else
-			return Guilt.INNOCENT;
+			return Belief.INNOCENT;
 	}
 	
 	public abstract void influence(Argument argument);
@@ -366,7 +366,7 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 
 		@Override
-		public boolean done() { return belief() == Guilt.INNOCENT; }
+		public boolean done() { return belief() == Belief.INNOCENT; }
 		
 	}
 	

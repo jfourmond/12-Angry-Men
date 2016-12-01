@@ -15,7 +15,8 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
-import metiers.Guilt;
+import metiers.Belief;
+import metiers.Opinions;
 
 /**
  * Le Jury n°1 est le président / l'arbitre des jurés
@@ -24,18 +25,17 @@ import metiers.Guilt;
 public class Jury1 extends NeutralJury {
 	private static final long serialVersionUID = 4874292225851563156L;
 	
-	private Guilt opinions[];
+	private Opinions opinions;
 	private LinkedList<AID> juriesWantingToTalk;
 	
 	private int countVotes;
 	
 	//	GETTERS
-	public Guilt[] getOpinions() { return opinions; }
+	public Opinions getOpinions() { return opinions; }
 	
 	public LinkedList<AID> getJuriesWantingToTalk() { return juriesWantingToTalk; }
 	
 	//	SETTERS
-	public void setOpinions(Guilt[] opinions) { this.opinions = opinions; }
 	
 	public void setJuriesWantingToTalk(LinkedList<AID> juriesWantingToTalk) { this.juriesWantingToTalk = juriesWantingToTalk; }
 	
@@ -43,7 +43,7 @@ public class Jury1 extends NeutralJury {
 	protected void setup() {
 		super.setup();
 		
-		opinions = new Guilt[NB_JURIES];
+		opinions = new Opinions(NB_JURIES);
 		juriesWantingToTalk = new LinkedList<>();
 		
 		addBehaviour(new WaitingJuries());
@@ -181,9 +181,9 @@ public class Jury1 extends NeutralJury {
 				if(reply.getPerformative() == ACLMessage.INFORM) {
 					AID jury = reply.getSender();
 					int id = getJuriesID(jury);
-					opinions[id-1] = Guilt.parse(reply.getContent());
+					opinions.setJuryOpinion(id, Belief.parse(reply.getContent()));
 					countVotes++;
-					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions[id-1]);
+					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions.getJuryOpinion(id));
 					if(countVotes == 12) {
 						AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
 						addBehaviour(new AllowToTalk(juryWantingToTalk));
@@ -228,13 +228,26 @@ public class Jury1 extends NeutralJury {
 				if(reply.getPerformative() == ACLMessage.REQUEST) {
 					AID jury = reply.getSender();
 					int id = getJuriesID(jury);
-					opinions[id-1] = Guilt.parse(reply.getContent());
-					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions[id-1]);
+					opinions.setJuryOpinion(id, Belief.parse(reply.getContent()));
+					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions.getJuryOpinion(id));
+					myAgent.addBehaviour(new InformOpinions());
 				}
 			} else
 				block();
 		}
 	}
+	
+	private class InformOpinions extends OneShotBehaviour {
+		private static final long serialVersionUID = 3344695619379676911L;
+		
+		public void action() {
+			ACLMessage information = new ACLMessage(ACLMessage.INFORM);
+			addJuriesToMessage(information);
+			information.setConversationId("opinions");
+			myAgent.send(information);
+		}
+	}
+	
 	/**
 	 * Comportement cyclique de réception de la demande de... Discussion (?)
 	 */
