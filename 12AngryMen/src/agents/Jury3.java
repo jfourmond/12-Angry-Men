@@ -168,6 +168,12 @@ public class Jury3 extends GuiltyFighterJury {
 				case 4:
 					myAgent.addBehaviour(new ReviewArgument(message, this.argument));
 				break;
+				case 11:
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+				break;
+				case 13:
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+				break;
 			}
 		}
 	}

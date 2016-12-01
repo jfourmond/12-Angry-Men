@@ -12,5 +12,4 @@ public abstract class NeutralJury extends Jury{
 	public void influence(Argument argument) {
 			belief += argument.getStrength() / 2;
 	}
-	
 }

@@ -67,6 +67,19 @@ public class Jury10 extends GuiltyFighterJury {
 						e.printStackTrace();
 					}
 				break;
+				case 15:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.2);
+					addJuriesToMessage(reject);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+						myAgent.send(reject);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
 			}
 		}
 	}

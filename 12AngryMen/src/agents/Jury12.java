@@ -1,5 +1,7 @@
 package agents;
 
+import java.io.IOException;
+
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -13,6 +15,7 @@ public class Jury12 extends NeutralJury {
 	@Override
 	protected void setup() {
 		super.setup();
+		addBehaviour(new ReceiveArgument());
 	}
 	
 	@Override
@@ -21,47 +24,67 @@ public class Jury12 extends NeutralJury {
 	}
 	
 	private class AnswerToArgument extends OneShotBehaviour {
-		private static final long serialVersionUID = -2805433556211668554L;
+		private static final long serialVersionUID = 1962341225762276021L;
 		
+		private ACLMessage message;
 		private Argument argument;
-		private Boolean accepted;
 		
 		//	CONSTRUCTEURS
-		public AnswerToArgument(Argument argument, Boolean accepted) {
-			this.argument = argument;
-			this.accepted = accepted;
+		public AnswerToArgument(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
 		}
 
 		@Override
-		public void action() { }
+		public void action() {
+			ACLMessage reject = null;
+			switch(argument.getId()) {
+				case 11:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.3);
+					addJuriesToMessage(reject);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+						myAgent.send(reject);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+				case 12:
+					reject = message.createReply();
+					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+					argument.removeStrength(0.3);
+					try {
+						reject.setContentObject(argument);
+						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+						myAgent.send(reject);
+						myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				break;
+			}
+		}
 	}
 	
 	private class ReceiveArgument extends CyclicBehaviour {
-		private static final long serialVersionUID = -4804003371667219349L;
-
+		private static final long serialVersionUID = -7329105425008293854L;
+		
 		private MessageTemplate mt;
 		
 		@Override
 		public void action() {
 			mt = MessageTemplate.MatchConversationId("argument");
-			ACLMessage reply = myAgent.receive(mt);
+			ACLMessage message = myAgent.receive(mt);
 			int performative;
-			Boolean accepted = null;
-			Argument argument;
-			if(reply != null) {
+			if(message != null) {
 				try {
-					performative = reply.getPerformative();
-					argument = (Argument) reply.getContentObject();
-					if(performative == ACLMessage.PROPOSE) {
-						accepted = null;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.ACCEPT_PROPOSAL) {
-						accepted = true;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else if(performative == ACLMessage.REJECT_PROPOSAL) {
-						accepted = false;
-						myAgent.addBehaviour(new AnswerToArgument(argument, accepted));
-					} else
+					performative = message.getPerformative();
+					if(performative == ACLMessage.PROPOSE || performative == ACLMessage.REJECT_PROPOSAL || performative == ACLMessage.ACCEPT_PROPOSAL)
+						myAgent.addBehaviour(new AnswerToArgument(message));
+					else
 						block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();

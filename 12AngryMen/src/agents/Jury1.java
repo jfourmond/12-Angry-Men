@@ -144,7 +144,7 @@ public class Jury1 extends NeutralJury {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			addBehaviour(new AskVoteJuries());
+			addBehaviour(new RequestVoteJuries());
 			return super.onEnd();
 		}
 	}
@@ -152,7 +152,7 @@ public class Jury1 extends NeutralJury {
 	/**
 	 * Comportement de demande de vote
 	 */
-	private class AskVoteJuries extends OneShotBehaviour {
+	private class RequestVoteJuries extends OneShotBehaviour {
 		private static final long serialVersionUID = -4475110771200834870L;
 		
 		@Override
@@ -185,8 +185,11 @@ public class Jury1 extends NeutralJury {
 					countVotes++;
 					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions.getJuryOpinion(id));
 					if(countVotes == 12) {
-						AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
-						addBehaviour(new AllowToTalk(juryWantingToTalk));
+						addBehaviour(new InformOpinions());
+						if(!juriesWantingToTalk.isEmpty()) {
+							AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
+							addBehaviour(new AllowToTalk(juryWantingToTalk));
+						}
 					}
 				}
 			} else
@@ -209,7 +212,7 @@ public class Jury1 extends NeutralJury {
 			if(message != null) {
 				if(message.getPerformative() == ACLMessage.REQUEST) {
 					System.out.println(getLocalName() + ":: demande un vote.");
-					myAgent.addBehaviour(new AskVoteJuries());
+					myAgent.addBehaviour(new RequestVoteJuries());
 				}
 			} else
 				block();
@@ -243,6 +246,12 @@ public class Jury1 extends NeutralJury {
 		public void action() {
 			ACLMessage information = new ACLMessage(ACLMessage.INFORM);
 			addJuriesToMessage(information);
+			try {
+				opinions.incrementSent();
+				information.setContentObject(opinions);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			information.setConversationId("opinions");
 			myAgent.send(information);
 		}
@@ -369,6 +378,9 @@ public class Jury1 extends NeutralJury {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				break;
+				case 15:
+					myAgent.addBehaviour(new RequestVoteJuries());
 				break;
 			}
 		}

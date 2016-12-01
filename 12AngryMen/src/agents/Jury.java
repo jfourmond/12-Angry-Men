@@ -342,6 +342,76 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	protected class RejectArgument extends OneShotBehaviour {
+		private static final long serialVersionUID = -9098072165755661067L;
+		
+		private Argument argument;
+		private ACLMessage message;
+		private List<AID> juries;
+		
+		private double less = 0.3;
+		
+		public RejectArgument(ACLMessage message, Argument argument, AID ...juries) {
+			this.argument = argument;
+			this.juries = new ArrayList<>();
+			for(AID jury : juries)
+				this.juries.add(jury);
+			this.message = message;
+		}
+		
+		public RejectArgument(ACLMessage message, Argument argument, double less, AID ...juries) {
+			this(message, argument, juries);
+			this.less = less;
+		}
+		
+		protected void addReceiver(ACLMessage message) {
+			for(AID aid : juries)
+				message.addReceiver(aid);
+		}
+		
+		@Override
+		public void action() {
+			ACLMessage reject = message.createReply();
+			reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
+			argument.removeStrength(less);
+			try {
+				addReceiver(reject);
+				reject.setContentObject(argument);
+				System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
+				myAgent.send(reject);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	protected class AcceptArgument extends OneShotBehaviour {
+		private static final long serialVersionUID = 7487596991674698434L;
+		
+		private Argument argument;
+		private ACLMessage message;
+		
+		public AcceptArgument(ACLMessage message, Argument argument) {
+			this.argument = argument;
+			this.message = message;
+		}
+		
+		@Override
+		public void action() {
+			ACLMessage accept = message.createReply();
+			accept.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+			try {
+				accept.setContentObject(argument);
+				myAgent.send(accept);
+				System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
+				influence(argument);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
 	protected class ReceiveInfluence extends Behaviour {
 		private static final long serialVersionUID = -4389290339335043917L;
 		
