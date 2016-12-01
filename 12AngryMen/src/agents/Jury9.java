@@ -8,6 +8,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Belief;
 
 public class Jury9 extends InnocenceDefenseJury {
 	private static final long serialVersionUID = -8550688594260356089L;
@@ -60,7 +61,7 @@ public class Jury9 extends InnocenceDefenseJury {
 						myAgent.send(accept);
 						System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
 						influence(argument);
-						myAgent.addBehaviour(new ExposeArgument(new Argument(), juries));
+						myAgent.addBehaviour(new ExposeArgument(new Argument(Belief.INNOCENT), juries));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

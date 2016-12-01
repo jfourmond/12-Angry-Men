@@ -58,7 +58,7 @@ public class Jury8 extends InnocenceDefenseJury {
 		
 		@Override
 		public int onEnd() {
-			addBehaviour(new ExposeArgument(new Argument(), juries));
+			addBehaviour(new ExposeArgument(new Argument(belief()), juries));
 			return super.onEnd();
 		}
 	}
@@ -128,7 +128,7 @@ public class Jury8 extends InnocenceDefenseJury {
 						reject.setContentObject(argument);
 						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
 						myAgent.send(reject);
-						myAgent.addBehaviour(new ExposeArgument(new Argument(), juries));
+						myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -159,11 +159,11 @@ public class Jury8 extends InnocenceDefenseJury {
 					myAgent.addBehaviour(new ReviewArgument(message, this.argument, juries));
 				break;
 				case 7:
-					addBehaviour(new ExposeArgument(new Argument(), juries));
+					addBehaviour(new ExposeArgument(new Argument(belief()), juries));
 				break;
 				case 8:
 					if(message.getSender().equals(juries[0]))
-						addBehaviour(new ExposeArgument(new Argument(), juries));
+						addBehaviour(new ExposeArgument(new Argument(belief()), juries));
 				break;
 			}
 		}

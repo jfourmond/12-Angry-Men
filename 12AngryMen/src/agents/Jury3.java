@@ -58,7 +58,7 @@ public class Jury3 extends GuiltyFighterJury {
 		
 		@Override
 		public int onEnd() {
-			addBehaviour(new ExposeArgument(new Argument(), juries[7]));
+			addBehaviour(new ExposeArgument(new Argument(belief()), juries[7]));
 			return super.onEnd();
 		}
 	}

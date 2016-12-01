@@ -9,16 +9,19 @@ public class Argument implements Serializable {
 	
 	private int id;
 	private double strength;
+	private Belief belief;
 	
 	//	CONSTRUCTEURS
-	public Argument() {
+	public Argument(Belief belief) {
 		this.id = ++ID;
 		this.strength = 0.5;
+		this.belief = belief;
 	}
 	
 	public Argument(Argument argument) {
 		this.id = ++ID;
 		this.strength = argument.strength;
+		this.belief = argument.belief;
 		giveStrength(0.1);
 	}
 	
@@ -27,10 +30,14 @@ public class Argument implements Serializable {
 	
 	public double getStrength() { return strength; }
 	
+	public Belief getBelief() { return belief; }
+	
 	//	SETTERS
 	public void setId(int id) { this.id = id; }
 	
 	public void setStrength(double strength) { this.strength = strength; }
+	
+	public void setBelief(Belief belief) { this.belief = belief; }
 	
 	// METHODES
 	/**
@@ -54,7 +61,7 @@ public class Argument implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Argument : { id: " + id + ", strength: " + strength + " }");
+		sb.append("Argument : { id: " + id + ", " + belief + ",strength: " + strength + " }");
 		return sb.toString();
 	}
 }
