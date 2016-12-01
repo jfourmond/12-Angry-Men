@@ -1,10 +1,10 @@
 package metiers;
 
-public enum Guilt {
+public enum Belief {
 	INNOCENT,
 	GUILTY;
 	
-	public static Guilt parse(String string) {
+	public static Belief parse(String string) {
 		switch(string) {
 			case "INNOCENT" :
 				return INNOCENT;

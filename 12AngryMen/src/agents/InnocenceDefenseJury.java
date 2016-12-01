@@ -1,7 +1,7 @@
 package agents;
 
 import metiers.Argument;
-import metiers.Guilt;
+import metiers.Belief;
 
 /**
  * Jury défendant l'innocence, ou une fois avoir changer d'avis (coupable à innocent), reste innocent
@@ -11,7 +11,7 @@ public abstract class InnocenceDefenseJury extends Jury {
 	
 	@Override
 	public void influence(Argument argument) {
-		if(belief() == Guilt.GUILTY)
+		if(belief() == Belief.GUILTY)
 			belief += argument.getStrength();
 	}
 }
