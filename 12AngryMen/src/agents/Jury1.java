@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 import jade.core.AID;
+import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -22,7 +24,7 @@ import metiers.Opinions;
  * Le Jury n°1 est le président / l'arbitre des jurés
  *
  */
-public class Jury1 extends NeutralJury {
+public class Jury1 extends Jury {
 	private static final long serialVersionUID = 4874292225851563156L;
 	
 	private Opinions opinions;
@@ -47,11 +49,12 @@ public class Jury1 extends NeutralJury {
 		juriesWantingToTalk = new LinkedList<>();
 		
 		addBehaviour(new WaitingJuries());
+		addBehaviour(new OnceAllInnocent());
 		addBehaviour(new ReceiveVoteJuries());
-		addBehaviour(new ReceiveRequestToTalk());
 		addBehaviour(new ReceiveRequestToVote());
 		addBehaviour(new ReceiveArgument());
 		addBehaviour(new ReceiveRequestChangeVote());
+		addBehaviour(new ReceiveInformationBelief());
 	}
 	
 	@Override
@@ -133,6 +136,18 @@ public class Jury1 extends NeutralJury {
 		
 		@Override
 		public int onEnd() {
+			myAgent.addBehaviour(new Start(myAgent));
+			return super.onEnd();
+		}
+	}
+	
+	private class Start extends WakerBehaviour {
+		private static final long serialVersionUID = 2660076876550906252L;
+
+		public Start(Agent a) { super(a, 10000); }
+		
+		@Override
+		protected void handleElapsedTimeout() {
 			// Envoi d'un message à tous les Jury pour leur dire d'être prêt
 			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
 			for (int i = 0; i < juries.length; ++i)
@@ -145,7 +160,6 @@ public class Jury1 extends NeutralJury {
 				e.printStackTrace();
 			}
 			addBehaviour(new RequestVoteJuries());
-			return super.onEnd();
 		}
 	}
 	
@@ -183,13 +197,8 @@ public class Jury1 extends NeutralJury {
 					int id = getJuriesID(jury);
 					opinions.setJuryOpinion(id, Belief.parse(reply.getContent()));
 					countVotes++;
-					if(countVotes == 12) {
+					if(countVotes == 12)
 						addBehaviour(new InformOpinions());
-						if(!juriesWantingToTalk.isEmpty()) {
-							AID juryWantingToTalk = juriesWantingToTalk.removeFirst();
-							addBehaviour(new AllowToTalk(juryWantingToTalk));
-						}
-					}
 				}
 			} else
 				block();
@@ -231,8 +240,30 @@ public class Jury1 extends NeutralJury {
 					AID jury = reply.getSender();
 					int id = getJuriesID(jury);
 					opinions.setJuryOpinion(id, Belief.parse(reply.getContent()));
-					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions.getJuryOpinion(id));
 					myAgent.addBehaviour(new InformOpinions());
+				}
+			} else
+				block();
+		}
+	}
+	
+	private class ReceiveInformationBelief extends CyclicBehaviour {
+		private static final long serialVersionUID = -1599536764010770608L;
+		
+		private MessageTemplate mt;
+		
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("inform-belief");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.INFORM) {
+					AID jury = reply.getSender();
+					int id = getJuriesID(jury);
+					try {
+						opinions.setJuryOpinion(id, (Belief) reply.getContentObject());
+					} catch (UnreadableException e) {
+						e.printStackTrace();
+					}
 				}
 			} else
 				block();
@@ -257,51 +288,6 @@ public class Jury1 extends NeutralJury {
 		}
 	}
 	
-	/**
-	 * Comportement cyclique de réception de la demande de... Discussion (?)
-	 */
-	private class ReceiveRequestToTalk extends CyclicBehaviour {
-		private static final long serialVersionUID = -6552752738688238433L;
-
-		private MessageTemplate mt;
-		
-		@Override
-		public void action() {
-			mt = MessageTemplate.MatchConversationId("asking-to-talk");
-			ACLMessage reply = myAgent.receive(mt);
-			if(reply != null) {
-				if(reply.getPerformative() == ACLMessage.REQUEST) {
-					AID jury = reply.getSender();
-					System.out.println(jury.getLocalName() + " veut parler.");
-					juriesWantingToTalk.add(jury);
-				}
-			} else
-				block();
-		}
-	}
-	
-	/**
-	 * Comportement d'autorisation à parler
-	 */
-	private class AllowToTalk extends OneShotBehaviour {
-		private static final long serialVersionUID = 1535672212649085802L;
-		
-		private AID jury;
-		
-		public AllowToTalk(AID jury) {
-			this.jury = jury;
-		}
-
-		@Override
-		public void action() {
-			// Envoi de la demande au Jury 1
-			ACLMessage auto = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
-			auto.addReceiver(jury);
-			auto.setConversationId("allowing-to-talk");
-			myAgent.send(auto);
-		}
-	}
-	
 	private class AnswerToArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 7188408824906352590L;
 		
@@ -317,7 +303,8 @@ public class Jury1 extends NeutralJury {
 		@Override
 		public void action() {
 			switch(argument.getId()) {
-				case 3:
+				case 25:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}
 		}
@@ -364,25 +351,34 @@ public class Jury1 extends NeutralJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(this.argument.getId()) {
-				case 8:	// REJET DU REJET
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.giveStrength(0.2);
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT REJECT " + argument);
-						myAgent.send(reject);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				break;
 				case 15:
 					myAgent.addBehaviour(new RequestVoteJuries());
 				break;
+				case 22:
+					myAgent.addBehaviour(new RequestChangeVote(Belief.INNOCENT));
+				break;
 			}
 		}
+	}
+	
+	private class OnceAllInnocent extends Behaviour {
+		private static final long serialVersionUID = 7408682973449826528L;
+		
+		private boolean done = false;
+		
+		@Override
+		public void action() {
+			if(opinions.areAllInnocent()) {
+				ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+				request.setConversationId("good-bye");
+				addJuriesToMessage(request);
+				myAgent.send(request);
+				done = true;
+			}
+		}
+
+		@Override
+		public boolean done() { return done; }
 	}
 }

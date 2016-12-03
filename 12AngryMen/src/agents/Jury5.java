@@ -6,16 +6,16 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Belief;
 import metiers.Opinions;
 
-public class Jury5 extends InnocenceDefenseJury {
+public class Jury5 extends Jury {
 	private static final long serialVersionUID = -5443724775577219581L;
 
 	@Override
 	protected void setup() {
 		super.setup();
 		
-		belief = 0.0;
 		addBehaviour(new ReceiveArgument());
 		addBehaviour(new ReceiveJuriesOpinion());
 	}
@@ -39,7 +39,7 @@ public class Jury5 extends InnocenceDefenseJury {
 					try {
 						Opinions opinions = (Opinions) message.getContentObject();
 						if(opinions.sent() == 4) {
-							myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+							myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
 						}
 					} catch (UnreadableException e) {
 						e.printStackTrace();
@@ -66,9 +66,12 @@ public class Jury5 extends InnocenceDefenseJury {
 		public void action() {
 			switch(argument.getId()) {
 				case 2:
-					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2));
+					myAgent.addBehaviour(new RejectArgument(message, argument));
 				break;
 				case 6:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+				break;
+				case 25:
 					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}
@@ -119,7 +122,7 @@ public class Jury5 extends InnocenceDefenseJury {
 			switch(this.argument.getId()) {
 				case 9:
 					// Demande à Jury1 s'il peut changer son vote en non-coupable
-					myAgent.addBehaviour(new RequestChangeVote());
+					myAgent.addBehaviour(new RequestChangeVote(Belief.INNOCENT));
 				break;
 			}
 		}

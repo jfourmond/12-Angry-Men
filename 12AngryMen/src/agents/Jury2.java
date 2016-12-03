@@ -7,13 +7,12 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
 
-public class Jury2 extends NeutralJury {
+public class Jury2 extends Jury {
 	private static final long serialVersionUID = -8216810411937057523L;
 
 	@Override
 	protected void setup() {
 		super.setup();
-		belief = 0.2;
 		
 		addBehaviour(new ReceiveArgument());
 	}
@@ -39,6 +38,15 @@ public class Jury2 extends NeutralJury {
 		public void action() {
 			switch(argument.getId()) {
 				case 17:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+				break;
+				case 20:
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+				break;
+				case 25:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+				break;
+				case 26:
 					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}

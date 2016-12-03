@@ -41,6 +41,13 @@ public class Opinions implements Serializable {
 		return count;
 	}
 	
+	public boolean areAllInnocent() {
+		for(Belief belief : opinions)
+			if(belief != Belief.INNOCENT)
+				return false;
+		return true;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder ch = new StringBuilder("[ ");

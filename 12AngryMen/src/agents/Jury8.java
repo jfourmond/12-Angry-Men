@@ -1,64 +1,33 @@
 package agents;
 
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Belief;
+import metiers.Opinions;
 
 /**
  * Le premier juré à ne pas être certain de la culpabilité de l'accusé
  */
-public class Jury8 extends InnocenceDefenseJury {
+public class Jury8 extends Jury {
 	private static final long serialVersionUID = 1677578125404393663L;
 
 	@Override
 	protected void setup() {
 		super.setup();
 		
-		belief = 0.8;
-		addBehaviour(new OnceReady());
-		addBehaviour(new OnceAllowedToTalk());
+		belief = Belief.INNOCENT;
+		
+		addBehaviour(new ReceiveJuriesOpinion());
 		addBehaviour(new ReceiveArgument());
 	}
 	
 	@Override
 	protected void takeDown() {
 		super.takeDown();
-	}
-	
-	private class OnceReady extends Behaviour {
-		private static final long serialVersionUID = -8482394774543485010L;
-
-		@Override
-		public void action() { }
-
-		@Override
-		public boolean done() { return ready; }
-		
-		@Override
-		public int onEnd() {
-			addBehaviour(new AskToTalk());
-			return super.onEnd();
-		}
-	}
-	
-	private class OnceAllowedToTalk extends Behaviour {
-		private static final long serialVersionUID = -599182665856063880L;
-
-		@Override
-		public void action() { }
-
-		@Override
-		public boolean done() { return allowedToTalk; }
-		
-		@Override
-		public int onEnd() {
-			addBehaviour(new ExposeArgument(new Argument(belief()), juries));
-			return super.onEnd();
-		}
 	}
 	
 	private class ReceiveArgument extends CyclicBehaviour {
@@ -110,10 +79,13 @@ public class Jury8 extends InnocenceDefenseJury {
 				break;
 				case 5:
 					myAgent.addBehaviour(new RejectArgument(message, argument));
-					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
 				break;
 				case 14:
-					addBehaviour(new ReviewArgument(message, argument, juries)); 
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+				break;
+				case 25:
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
 				break;
 			}
 		}
@@ -141,14 +113,19 @@ public class Jury8 extends InnocenceDefenseJury {
 					myAgent.addBehaviour(new ReviewArgument(message, this.argument, juries));
 				break;
 				case 7:
-					addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
 				break;
 				case 8:
-					if(message.getSender().equals(juries[0]))
-						addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
 				break;
 				case 16:
-					addBehaviour(new ExposeArgument(new Argument(belief(), 0.9), juries));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+				break;
+				case 18:
+					myAgent.addBehaviour(new ReviewArgument(message, argument, juries));
+				break;
+				case 19:
+					myAgent.addBehaviour(new ReviewArgument(message, argument, juries));
 				break;
 			}
 		}
@@ -168,7 +145,6 @@ public class Jury8 extends InnocenceDefenseJury {
 
 		@Override
 		public void action() {
-			System.out.println(myAgent.getLocalName() + ":: " + argument + " ACCEPTED");
 			switch(argument.getId()) {
 				case 3:
 					myAgent.addBehaviour(new AskVote());
@@ -177,9 +153,39 @@ public class Jury8 extends InnocenceDefenseJury {
 			try {
 				addBehaviour(new Influence(message));
 			} catch (UnreadableException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class ReceiveJuriesOpinion extends CyclicBehaviour {
+		private static final long serialVersionUID = 5550813940577575102L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("opinions");
+			ACLMessage message = myAgent.receive(mt);
+			if(message != null) {
+				if(message.getPerformative() == ACLMessage.INFORM) {
+					try {
+						Opinions opinions = (Opinions) message.getContentObject();
+						switch(opinions.sent()) {
+							case 1:
+								addBehaviour(new ExposeArgument(new Argument(belief), juries));
+							break;
+							case 5:
+								myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+							break;
+						}
+							
+					} catch (UnreadableException e) {
+						e.printStackTrace();
+					}
+				}
+			} else
+				block();
 		}
 	}
 }

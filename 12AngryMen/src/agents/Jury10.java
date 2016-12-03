@@ -1,22 +1,21 @@
 package agents;
 
-import java.io.IOException;
-
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Opinions;
 
-public class Jury10 extends GuiltyFighterJury {
+public class Jury10 extends Jury {
 	private static final long serialVersionUID = 5550699255797694772L;
 
 	@Override
 	protected void setup() {
 		super.setup();
 		
-		belief = 0.0;
+		addBehaviour(new ReceiveJuriesOpinion());
 		addBehaviour(new ReceiveArgument());
 	}
 	
@@ -39,26 +38,18 @@ public class Jury10 extends GuiltyFighterJury {
 
 		@Override
 		public void action() {
-			ACLMessage reject = null;
 			switch(argument.getId()) {
 				case 7:
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(1.0);	// Rejet très fort
-					addJuriesToMessage(reject);
-					try {
-						reject.setContentObject(argument);
-						myAgent.send(reject);
-						System.out.println(myAgent.getLocalName() + ":: STRONG REJECT " + argument);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
 				break;
 				case 9:
-					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
 				break;
 				case 15:
-					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
+				break;
+				case 26:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}
 		}
@@ -83,6 +74,30 @@ public class Jury10 extends GuiltyFighterJury {
 						block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();
+				}
+			} else
+				block();
+		}
+	}
+	
+	private class ReceiveJuriesOpinion extends CyclicBehaviour {
+		private static final long serialVersionUID = 5550813940577575102L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("opinions");
+			ACLMessage message = myAgent.receive(mt);
+			if(message != null) {
+				if(message.getPerformative() == ACLMessage.INFORM) {
+					try {
+						Opinions opinions = (Opinions) message.getContentObject();
+						if(opinions.sent() == 8)
+							myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+					} catch (UnreadableException e) {
+						e.printStackTrace();
+					}
 				}
 			} else
 				block();

@@ -6,13 +6,15 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Belief;
 
-public class Jury12 extends NeutralJury {
+public class Jury12 extends Jury {
 	private static final long serialVersionUID = 2463325118992257112L;
 
 	@Override
 	protected void setup() {
 		super.setup();
+		
 		addBehaviour(new ReceiveArgument());
 	}
 	
@@ -41,7 +43,13 @@ public class Jury12 extends NeutralJury {
 				break;
 				case 12:
 					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
-					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+					myAgent.addBehaviour(new ExposeArgument(new Argument(belief), juries));
+				break;
+				case 24:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+				break;
+				case 26:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}
 		}
@@ -63,17 +71,36 @@ public class Jury12 extends NeutralJury {
 					if(performative == ACLMessage.PROPOSE)
 						myAgent.addBehaviour(new AnswerToArgument(message));
 					else if(performative == ACLMessage.REJECT_PROPOSAL )
-						// TODO
-						System.out.print("");
-					else if(performative == ACLMessage.ACCEPT_PROPOSAL)
-						// TODO
-						System.out.print("");
+						myAgent.addBehaviour(new AnswerToReject(message));
 					else block();
 				} catch (UnreadableException e) {
 					e.printStackTrace();
 				}
 			} else
 				block();
+		}
+	}
+	
+	private class AnswerToReject extends OneShotBehaviour {
+		private static final long serialVersionUID = -5773576052319418263L;
+		
+		private ACLMessage message;
+		private Argument argument;
+		
+		//	CONSTRUCTEURS
+		public AnswerToReject(ACLMessage message) throws UnreadableException {
+			this.message = message;
+			argument = (Argument) message.getContentObject();
+		}
+
+		@Override
+		public void action() {
+			switch(this.argument.getId()) {
+				case 22:
+					setBelief(Belief.INNOCENT);
+					myAgent.addBehaviour(new RequestChangeVote(belief));
+				break;
+			}
 		}
 	}
 }

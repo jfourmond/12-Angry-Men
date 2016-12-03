@@ -29,7 +29,7 @@ public abstract class Jury extends Agent implements Serializable {
 
 	protected static final int NB_JURIES = 12;
 	
-	protected double belief;
+	protected Belief belief;
 	protected boolean ready;
 	protected boolean allowedToTalk;
 	protected int nbVotes;
@@ -37,24 +37,17 @@ public abstract class Jury extends Agent implements Serializable {
 	protected AID[] juries;
 	
 	//	GETTERS
-	public double getBelief() { return belief; }
+	public Belief belief() { return belief; }
 	
 	public boolean isAllowedToTalk() { return allowedToTalk; }
 	
 	//	SETTERS
-	public void setBelief(double belief) { this.belief = belief; }
+	public void setBelief(Belief belief) { this.belief = belief; }
 	
 	public void setAllowedToTalk(boolean allowedToTalk) { this.allowedToTalk = allowedToTalk; }
 	
 	//	METHODES OBJECT
-	public Belief belief() {
-		if(belief < 0.8)
-			return Belief.GUILTY;
-		else
-			return Belief.INNOCENT;
-	}
-	
-	public abstract void influence(Argument argument);
+	public void influence(Argument argument) { this.belief = argument.getBelief(); }
 	
 	//	METHODES AGENT
 	@Override
@@ -76,10 +69,12 @@ public abstract class Jury extends Agent implements Serializable {
 			fe.printStackTrace();
 		}
 		
+		belief = Belief.GUILTY;
+		
 		addBehaviour(new PerformReady());
 		addBehaviour(new ReceivingVote());
-		addBehaviour(new ReceiveAllowToTalk());
 		addBehaviour(new ReceiveInfluence());
+		addBehaviour(new Leave());
 	}
 	
 	@Override
@@ -240,51 +235,17 @@ public abstract class Jury extends Agent implements Serializable {
 	protected class RequestChangeVote extends OneShotBehaviour {
 		private static final long serialVersionUID = 597974196410566448L;
 
-		@Override
-		public void action() {
-			// Envoi de la demande au Jury 1
-			ACLMessage vote = new ACLMessage(ACLMessage.REQUEST);
-			vote.addReceiver(juries[0]);
-			vote.setContent(belief() + "");
-			vote.setConversationId("change-vote");
-			System.out.println(myAgent.getLocalName() + ":: REQUEST CHANGE VOTE " + belief());
-			myAgent.send(vote);
-		}
-	}
-	
-	/**
-	 * Comportement à exécution unique de demande au {@link Jury1} l'autorisation de parler
-	 */
-	protected class AskToTalk extends OneShotBehaviour {
-		private static final long serialVersionUID = 4316551835965456089L;
-
-		@Override
-		public void action() {
-			// Envoi de la demande au Jury 1
-			ACLMessage vote = new ACLMessage(ACLMessage.REQUEST);
-			vote.addReceiver(juries[0]);
-			vote.setConversationId("asking-to-talk");
-			myAgent.send(vote);
-		}
-	}
-	
-	/**
-	 * Comportement cyclique de réception de l'autorisation de parler
-	 */
-	protected class ReceiveAllowToTalk extends CyclicBehaviour {
-		private static final long serialVersionUID = -2757249674321789741L;
-
-		private MessageTemplate mt;
+		public RequestChangeVote(Belief b) { belief = b; }
 		
 		@Override
 		public void action() {
-			mt = MessageTemplate.MatchConversationId("allowing-to-talk");
-			ACLMessage reply = myAgent.receive(mt);
-			if(reply != null) {
-				if(reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
-					allowedToTalk = true;
-			} else
-				block();
+			// Envoi de la demande au Jury 1
+			ACLMessage vote = new ACLMessage(ACLMessage.REQUEST);
+			vote.addReceiver(juries[0]);
+			vote.setContent(belief + "");
+			vote.setConversationId("change-vote");
+			System.out.println(myAgent.getLocalName() + ":: REQUEST CHANGE VOTE " + belief());
+			myAgent.send(vote);
 		}
 	}
 	
@@ -306,7 +267,8 @@ public abstract class Jury extends Agent implements Serializable {
 		
 		protected void addReceiver(ACLMessage message) {
 			for(AID aid : juries)
-				message.addReceiver(aid);
+				if(!aid.equals(myAgent.getAID()))
+					message.addReceiver(aid);
 		}
 		
 		@Override
@@ -340,6 +302,13 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 		
 		@Override
+		protected void addReceiver(ACLMessage message) {
+			for(AID aid : juries)
+				if(!aid.equals(myAgent.getAID()) && !aid.equals(this.message.getSender()))
+					message.addReceiver(aid);
+		}
+		
+		@Override
 		public void action() {
 			ACLMessage propose = message.createReply();
 			newArgument = new Argument(argument);
@@ -362,8 +331,6 @@ public abstract class Jury extends Agent implements Serializable {
 		private ACLMessage message;
 		private List<AID> juries;
 		
-		private double less = 0.3;
-		
 		public RejectArgument(ACLMessage message, Argument argument, AID ...juries) {
 			this.argument = argument;
 			this.juries = new ArrayList<>();
@@ -372,14 +339,9 @@ public abstract class Jury extends Agent implements Serializable {
 			this.message = message;
 		}
 		
-		public RejectArgument(ACLMessage message, Argument argument, double less, AID ...juries) {
-			this(message, argument, juries);
-			this.less = less;
-		}
-		
 		protected void addReceiver(ACLMessage message) {
 			for(AID aid : juries)
-				if(aid != myAgent.getAID())
+				if(!aid.equals(myAgent.getAID()) && !aid.equals(this.message.getSender()))
 					message.addReceiver(aid);
 		}
 		
@@ -387,7 +349,6 @@ public abstract class Jury extends Agent implements Serializable {
 		public void action() {
 			ACLMessage reject = message.createReply();
 			reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-			argument.removeStrength(less);
 			try {
 				addReceiver(reject);
 				reject.setContentObject(argument);
@@ -419,6 +380,7 @@ public abstract class Jury extends Agent implements Serializable {
 				myAgent.send(accept);
 				System.out.println(myAgent.getLocalName() + ":: ACCEPT " + argument);
 				influence(argument);
+				myAgent.addBehaviour(new InformFirstJury(argument.getBelief()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -440,7 +402,7 @@ public abstract class Jury extends Agent implements Serializable {
 					try {
 						Argument argument = (Argument) influence.getContentObject();
 						influence(argument);
-						System.out.println(getLocalName() + ":: INFLUENCED BY " + argument + " NOW " + belief());
+						System.out.println(getLocalName() + ":: INFLUENCED BY " + argument + " NOW " + belief);
 					} catch(UnreadableException e) {
 						e.printStackTrace();
 					}
@@ -454,6 +416,29 @@ public abstract class Jury extends Agent implements Serializable {
 		
 	}
 	
+	protected class InformFirstJury extends OneShotBehaviour {
+		private static final long serialVersionUID = 1008776169018343746L;
+
+		private Belief belief;
+		
+		public InformFirstJury(Belief belief) { this.belief = belief; }
+		
+		@Override
+		public void action() {
+			// Envoi de la demande au Jury 1
+			ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
+			try {
+				inform.addReceiver(juries[0]);
+				inform.setConversationId("inform-belief");
+				inform.setContentObject(this.belief);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			myAgent.send(inform);
+		}
+		
+	}
+	
 	/**
 	 * Comportement à exécution unique pour influencer un juré
 	 */
@@ -461,12 +446,10 @@ public abstract class Jury extends Agent implements Serializable {
 		private static final long serialVersionUID = 3311163181612119608L;
 		
 		private ACLMessage message;
-		private AID jury;
 		private Argument argument;
 		
 		public Influence(ACLMessage message) throws UnreadableException {
 			this.message = message;
-			jury = message.getSender();
 			argument = (Argument) this.message.getContentObject();
 		}
 
@@ -478,10 +461,28 @@ public abstract class Jury extends Agent implements Serializable {
 				message.setContentObject(argument);
 				message.setConversationId("influence");
 				myAgent.send(message);
-				System.out.println(myAgent.getLocalName() + ":: INFLUENCE " + jury.getLocalName());
 			} catch (IOException e) {
 					e.printStackTrace();
 			}
 		}
+	}
+	
+	protected class Leave extends CyclicBehaviour {
+		private static final long serialVersionUID = 2140974085997359913L;
+
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("good-bye");
+			ACLMessage reply = myAgent.receive(mt);
+			if(reply != null) {
+				if(reply.getPerformative() == ACLMessage.REQUEST) {
+					myAgent.doDelete();
+				}
+			} else
+				block();
+		}
+		
 	}
 }
