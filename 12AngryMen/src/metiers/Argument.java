@@ -18,6 +18,11 @@ public class Argument implements Serializable {
 		this.belief = belief;
 	}
 	
+	public Argument(Belief belief, double strength) {
+		this(belief);
+		this.strength = strength;
+	}
+	
 	public Argument(Argument argument) {
 		this.id = ++ID;
 		this.strength = argument.strength;

@@ -44,7 +44,6 @@ public class Jury11 extends NeutralJury {
 					myAgent.addBehaviour(new ExposeArgument(new Argument(Belief.INNOCENT), juries));
 				break;
 				case 13:
-					System.out.println("13 ?");
 					myAgent.addBehaviour(new RejectArgument(message, argument, 0.2, juries));
 				break;
 				case 15:

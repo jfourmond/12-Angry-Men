@@ -10,6 +10,6 @@ public abstract class NeutralJury extends Jury{
 	
 	@Override
 	public void influence(Argument argument) {
-			belief += argument.getStrength() / 2;
+			belief += (argument.getStrength() / 2);
 	}
 }

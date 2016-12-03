@@ -37,8 +37,8 @@ public class Jury4 extends GuiltyFighterJury {
 		@Override
 		public void action() {
 			switch(argument.getId()) {
-				case 1:
-					
+				case 16:
+					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
 				break;
 			}
 		}

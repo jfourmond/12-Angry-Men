@@ -1,7 +1,9 @@
 package agents;
 
+import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
@@ -14,6 +16,7 @@ public class Jury6 extends NeutralJury {
 	protected void setup() {
 		super.setup();
 		
+		belief = 0.2;
 		addBehaviour(new ReceiveArgument());
 	}
 	
@@ -37,8 +40,9 @@ public class Jury6 extends NeutralJury {
 		@Override
 		public void action() {
 			switch(argument.getId()) {
-				case 1:
-					
+				case 17:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
+					myAgent.addBehaviour(new ProposeVote(myAgent));
 				break;
 			}
 		}
@@ -67,5 +71,14 @@ public class Jury6 extends NeutralJury {
 			} else
 				block();
 		}
+	}
+	
+	protected class ProposeVote extends WakerBehaviour {
+		private static final long serialVersionUID = 4260311352797852824L;
+
+		public ProposeVote(Agent a) { super(a, 5000); }
+		
+		@Override
+		protected void handleElapsedTimeout() { myAgent.addBehaviour(new AskVote()); }	
 	}
 }

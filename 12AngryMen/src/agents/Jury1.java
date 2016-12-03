@@ -183,7 +183,6 @@ public class Jury1 extends NeutralJury {
 					int id = getJuriesID(jury);
 					opinions.setJuryOpinion(id, Belief.parse(reply.getContent()));
 					countVotes++;
-					System.out.println("Vote " + jury.getLocalName() + " -> " + opinions.getJuryOpinion(id));
 					if(countVotes == 12) {
 						addBehaviour(new InformOpinions());
 						if(!juriesWantingToTalk.isEmpty()) {
@@ -249,6 +248,7 @@ public class Jury1 extends NeutralJury {
 			try {
 				opinions.incrementSent();
 				information.setContentObject(opinions);
+				System.out.println(opinions);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

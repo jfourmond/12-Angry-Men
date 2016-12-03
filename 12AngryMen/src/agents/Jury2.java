@@ -13,6 +13,7 @@ public class Jury2 extends NeutralJury {
 	@Override
 	protected void setup() {
 		super.setup();
+		belief = 0.2;
 		
 		addBehaviour(new ReceiveArgument());
 	}
@@ -37,8 +38,8 @@ public class Jury2 extends NeutralJury {
 		@Override
 		public void action() {
 			switch(argument.getId()) {
-				case 1:
-					
+				case 17:
+					myAgent.addBehaviour(new AcceptArgument(message, argument));
 				break;
 			}
 		}

@@ -41,19 +41,7 @@ public class Jury12 extends NeutralJury {
 				break;
 				case 12:
 					myAgent.addBehaviour(new RejectArgument(message, argument, juries));
-					/*
-					reject = message.createReply();
-					reject.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					argument.removeStrength(0.3);
-					try {
-						reject.setContentObject(argument);
-						System.out.println(myAgent.getLocalName() + ":: REJECT " + argument);
-						myAgent.send(reject); */
 					myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
-					/*
-					} catch (IOException e) {
-						e.printStackTrace();
-					} */
 				break;
 			}
 		}

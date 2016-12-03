@@ -6,6 +6,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
+import metiers.Opinions;
 
 public class Jury5 extends InnocenceDefenseJury {
 	private static final long serialVersionUID = -5443724775577219581L;
@@ -16,11 +17,37 @@ public class Jury5 extends InnocenceDefenseJury {
 		
 		belief = 0.0;
 		addBehaviour(new ReceiveArgument());
+		addBehaviour(new ReceiveJuriesOpinion());
 	}
 	
 	@Override
 	protected void takeDown() {
 		super.takeDown();
+	}
+	
+	private class ReceiveJuriesOpinion extends CyclicBehaviour {
+		private static final long serialVersionUID = 6417329372143758293L;
+		
+		private MessageTemplate mt;
+		
+		@Override
+		public void action() {
+			mt = MessageTemplate.MatchConversationId("opinions");
+			ACLMessage message = myAgent.receive(mt);
+			if(message != null) {
+				if(message.getPerformative() == ACLMessage.INFORM) {
+					try {
+						Opinions opinions = (Opinions) message.getContentObject();
+						if(opinions.sent() == 4) {
+							myAgent.addBehaviour(new ExposeArgument(new Argument(belief()), juries));
+						}
+					} catch (UnreadableException e) {
+						e.printStackTrace();
+					}
+				}
+			} else
+				block();
+		}
 	}
 	
 	private class AnswerToArgument extends OneShotBehaviour {

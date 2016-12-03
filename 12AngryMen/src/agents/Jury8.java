@@ -147,6 +147,9 @@ public class Jury8 extends InnocenceDefenseJury {
 					if(message.getSender().equals(juries[0]))
 						addBehaviour(new ExposeArgument(new Argument(belief()), juries));
 				break;
+				case 16:
+					addBehaviour(new ExposeArgument(new Argument(belief(), 0.9), juries));
+				break;
 			}
 		}
 	}
@@ -168,11 +171,7 @@ public class Jury8 extends InnocenceDefenseJury {
 			System.out.println(myAgent.getLocalName() + ":: " + argument + " ACCEPTED");
 			switch(argument.getId()) {
 				case 3:
-					ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-					request.setConversationId("request-vote");
-					request.addReceiver(juries[0]);
-					System.out.println(myAgent.getLocalName() + ":: demande un vote au Jury 1.");
-					myAgent.send(request);
+					myAgent.addBehaviour(new AskVote());
 				break;
 			}
 			try {

@@ -184,6 +184,19 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 
+	protected class AskVote extends OneShotBehaviour {
+		private static final long serialVersionUID = 8151209285061373832L;
+
+		@Override
+		public void action() {
+			ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+			request.setConversationId("request-vote");
+			request.addReceiver(juries[0]);
+			System.out.println(myAgent.getLocalName() + ":: demande un vote au Jury 1.");
+			myAgent.send(request);
+		}	
+	}
+	
 	/**
 	 * Comportement cyclique de réception d'une demande de vote
 	 */
@@ -427,7 +440,7 @@ public abstract class Jury extends Agent implements Serializable {
 					try {
 						Argument argument = (Argument) influence.getContentObject();
 						influence(argument);
-						System.out.println(getLocalName() + ":: INFLUENCED BY " + argument);
+						System.out.println(getLocalName() + ":: INFLUENCED BY " + argument + " NOW " + belief());
 					} catch(UnreadableException e) {
 						e.printStackTrace();
 					}

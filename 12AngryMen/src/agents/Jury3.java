@@ -85,6 +85,9 @@ public class Jury3 extends GuiltyFighterJury {
 				case 8:	//REJET FAIBLE
 					myAgent.addBehaviour(new RejectArgument(message, argument, 0.1, juries));
 				break;
+				case 17: // REJET FAIBLE ET DISCUTABLE
+					myAgent.addBehaviour(new RejectArgument(message, argument, 0.1, juries));
+				break;
 			}
 		}
 	}
