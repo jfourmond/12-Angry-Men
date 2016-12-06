@@ -23,6 +23,9 @@ public class Jury12 extends Jury {
 		super.takeDown();
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un {@link Argument}
+	 */
 	private class AnswerToArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 1962341225762276021L;
 		
@@ -55,6 +58,9 @@ public class Jury12 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un {@link Argument}
+	 */
 	private class ReceiveArgument extends CyclicBehaviour {
 		private static final long serialVersionUID = -7329105425008293854L;
 		
@@ -81,6 +87,9 @@ public class Jury12 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un rejet d'{@link Argument}
+	 */
 	private class AnswerToReject extends OneShotBehaviour {
 		private static final long serialVersionUID = -5773576052319418263L;
 		
