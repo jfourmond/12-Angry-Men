@@ -112,6 +112,9 @@ public class Jury3 extends Jury {
 		}
 	}
 
+	/**
+	 * Comportement à exécution unique de réponse à un rejet d'{@link Argument}
+	 */
 	private class AnswerToReject extends OneShotBehaviour {
 		private static final long serialVersionUID = -1808741270435584554L;
 		
