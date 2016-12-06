@@ -31,7 +31,6 @@ public abstract class Jury extends Agent implements Serializable {
 	
 	protected Belief belief;
 	protected boolean ready;
-	protected boolean allowedToTalk;
 	protected int nbVotes;
 	
 	protected AID[] juries;
@@ -39,12 +38,8 @@ public abstract class Jury extends Agent implements Serializable {
 	//	GETTERS
 	public Belief belief() { return belief; }
 	
-	public boolean isAllowedToTalk() { return allowedToTalk; }
-	
 	//	SETTERS
 	public void setBelief(Belief belief) { this.belief = belief; }
-	
-	public void setAllowedToTalk(boolean allowedToTalk) { this.allowedToTalk = allowedToTalk; }
 	
 	//	METHODES OBJECT
 	public void influence(Argument argument) { this.belief = argument.getBelief(); }
@@ -53,8 +48,6 @@ public abstract class Jury extends Agent implements Serializable {
 	@Override
 	protected void setup() {
 		System.out.println(getLocalName() + ":: " + "Arrivée.");
-		
-		allowedToTalk = false;
 		
 		DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
@@ -89,6 +82,11 @@ public abstract class Jury extends Agent implements Serializable {
 		System.out.println(getLocalName() + ":: Départ.");
 	}
 	
+	/**
+	 * Retourne l'identifiant de l'Agent passé en paramètre
+	 * @param agent : Agent
+	 * @return l'identifiant de l'Agent passé en paramètre
+	 */
 	public static Integer getJuriesID(AID agent) {
 		switch(agent.getLocalName()) {
 			case "Jury1" :
@@ -120,6 +118,12 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Test si l'Agent {@link Jury} passé en paramètre est destinataire du message passé en paramètre
+	 * @param message : {@link ACLMessage} d'où les destinataires sont parcourus
+	 * @param jury : destinataire à rechercher
+	 * @return <code>true</code> si le Jury est destinataire, <code>false</code> sinon
+	 */
 	public static boolean isJuryReceiver(ACLMessage message, AID jury) {
 		Iterator<AID> it = message.getAllReceiver();
 		while(it.hasNext()) {
@@ -130,6 +134,10 @@ public abstract class Jury extends Agent implements Serializable {
 		return false;
 	}
 	
+	/**
+	 * Ajoute tous les jurés au message passé en paramètre
+	 * @param message : {@link ACLMessage} dont les destinataires sont ajoutés
+	 */
 	public void addJuriesToMessage(ACLMessage message) {
 		int id = getJuriesID(getAID());
 		for(int i = 0; i < juries.length; ++i) {
@@ -179,6 +187,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 
+	/**
+	 * Comportement à exécution unique de demande de vote au {@link Jury1}
+	 */
 	protected class AskVote extends OneShotBehaviour {
 		private static final long serialVersionUID = 8151209285061373832L;
 
@@ -324,6 +335,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique gérant le renvoi d'un argument.
+	 */
 	protected class RejectArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = -9098072165755661067L;
 		
@@ -360,6 +374,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique gérant l'acceptation d'un argument
+	 */
 	protected class AcceptArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 7487596991674698434L;
 		
@@ -388,6 +405,9 @@ public abstract class Jury extends Agent implements Serializable {
 		
 	}
 	
+	/**
+	 * Comportement gérant l'influence d'un message sur l'Agent courant
+	 */
 	protected class ReceiveInfluence extends Behaviour {
 		private static final long serialVersionUID = -4389290339335043917L;
 		
@@ -416,6 +436,9 @@ public abstract class Jury extends Agent implements Serializable {
 		
 	}
 	
+	/**
+	 * Comportement à exécution unique information le {@link Jury1} d'un changement d'opinion
+	 */
 	protected class InformFirstJury extends OneShotBehaviour {
 		private static final long serialVersionUID = 1008776169018343746L;
 
@@ -467,6 +490,9 @@ public abstract class Jury extends Agent implements Serializable {
 		}
 	}
 	
+	/**
+	 * Comportement captant une requête d'adieu
+	 */
 	protected class Leave extends CyclicBehaviour {
 		private static final long serialVersionUID = 2140974085997359913L;
 
@@ -483,6 +509,5 @@ public abstract class Jury extends Agent implements Serializable {
 			} else
 				block();
 		}
-		
 	}
 }
