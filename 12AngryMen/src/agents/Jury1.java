@@ -141,6 +141,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement de lancement du débat
+	 */
 	private class Start extends WakerBehaviour {
 		private static final long serialVersionUID = 2660076876550906252L;
 
@@ -227,6 +230,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un message d'une demande de vote
+	 */
 	private class ReceiveRequestChangeVote extends CyclicBehaviour {
 		private static final long serialVersionUID = -531435194037473825L;
 		
@@ -247,6 +253,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un changement d'opinion
+	 */
 	private class ReceiveInformationBelief extends CyclicBehaviour {
 		private static final long serialVersionUID = -1599536764010770608L;
 		
@@ -270,6 +279,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique d'envoi à tous les jurés des opinions de tous les jurés
+	 */
 	private class InformOpinions extends OneShotBehaviour {
 		private static final long serialVersionUID = 3344695619379676911L;
 		
@@ -288,6 +300,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un {@link Argument}
+	 */
 	private class AnswerToArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 7188408824906352590L;
 		
@@ -310,6 +325,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un {@link Argument}
+	 */
 	private class ReceiveArgument extends CyclicBehaviour {
 		private static final long serialVersionUID = 3440554003187849924L;
 		
@@ -337,6 +355,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un rejet d'{@link Argument}
+	 */
 	private class AnswerToReject extends OneShotBehaviour {
 		private static final long serialVersionUID = -1808741270435584554L;
 		
@@ -362,6 +383,9 @@ public class Jury1 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement exécuté lorsque tous les jurés pensent que l'accusé est innocent
+	 */
 	private class OnceAllInnocent extends Behaviour {
 		private static final long serialVersionUID = 7408682973449826528L;
 		
