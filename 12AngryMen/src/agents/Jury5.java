@@ -25,6 +25,9 @@ public class Jury5 extends Jury {
 		super.takeDown();
 	}
 	
+	/**
+	 * Comportement cyclique de réception des opinions des {@link Jury}s
+	 */
 	private class ReceiveJuriesOpinion extends CyclicBehaviour {
 		private static final long serialVersionUID = 6417329372143758293L;
 		
@@ -50,6 +53,9 @@ public class Jury5 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un {@link Argument}
+	 */
 	private class AnswerToArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = 6984704043830365971L;
 		
@@ -78,6 +84,9 @@ public class Jury5 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un {@link Argument}
+	 */
 	private class ReceiveArgument extends CyclicBehaviour {
 		private static final long serialVersionUID = -4804003371667219349L;
 
@@ -105,6 +114,9 @@ public class Jury5 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un rejet d'{@link Argument}
+	 */
 	private class AnswerToReject extends OneShotBehaviour {
 		private static final long serialVersionUID = -6787394496748513050L;
 		
