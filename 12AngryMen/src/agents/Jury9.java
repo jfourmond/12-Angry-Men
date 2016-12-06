@@ -7,7 +7,6 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import metiers.Argument;
 import metiers.Belief;
-import metiers.Opinions;
 
 public class Jury9 extends Jury {
 	private static final long serialVersionUID = -8550688594260356089L;
@@ -24,6 +23,9 @@ public class Jury9 extends Jury {
 		super.takeDown();
 	}
 	
+	/**
+	 * Comportement à exécution unique de réponse à un {@link Argument}
+	 */
 	private class AnswerToArgument extends OneShotBehaviour {
 		private static final long serialVersionUID = -5708986610042651190L;
 		
@@ -54,6 +56,9 @@ public class Jury9 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement cyclique de réception d'un {@link Argument}
+	 */
 	private class ReceiveArgument extends CyclicBehaviour {
 		private static final long serialVersionUID = -4804003371667219349L;
 
@@ -81,6 +86,9 @@ public class Jury9 extends Jury {
 		}
 	}
 	
+	/**
+	 * Comportement à exécution unique à une acceptation d'{@link Argument}
+	 */
 	private class AnswerToAccept extends OneShotBehaviour {
 		private static final long serialVersionUID = 8521370705944052338L;
 		
